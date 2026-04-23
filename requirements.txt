@@ -7,4 +7,3 @@ folium
 streamlit-folium
 geopy
 matplotlib
-PIL
