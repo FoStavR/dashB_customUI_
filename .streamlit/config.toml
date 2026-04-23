@@ -1,0 +1,7 @@
+[theme]
+base= "light" 
+primaryColor = "#FF4B4B"
+backgroundColor = "#e6eff7"
+secondaryBackgroundColor = "#ffff"
+textColor = "#000000b6" 
+font = "Cambria" 
