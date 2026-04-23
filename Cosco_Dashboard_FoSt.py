@@ -1273,7 +1273,7 @@ div[data-testid="stMetricValue"] {
 # MAIN APP FLOW
 # ==============================
 
-folder_path = "Data/Master"  # Update this path to your folder containing Excel files
+folder_path = "Data/"  # Update this path to your folder containing Excel files
 inbound_df, outbound_df = load_data(folder_path)
 
 # -----------------------------
