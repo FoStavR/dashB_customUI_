@@ -16,7 +16,7 @@ import plotly.graph_objects as go
 # PAGE CONFIG
 # ==============================
 st.set_page_config( page_title="Welcome to COSCO Logistics Dashboard",page_icon="🌐", layout="wide")
-logo = Image.open("data/logo.png") 
+logo = Image.open("Data/logo.png") 
 st.title("COSCO GREECE Logistics Dashboard 📈")
 
 
