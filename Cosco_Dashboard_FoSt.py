@@ -16,7 +16,7 @@ import plotly.graph_objects as go
 # PAGE CONFIG
 # ==============================
 st.set_page_config( page_title="Welcome to COSCO Logistics Dashboard",page_icon="🌐", layout="wide")
-logo = Image.open(r"data/logo.png") 
+logo = Image.open("data/logo.png") 
 st.title("COSCO GREECE Logistics Dashboard 📈")
 
 
@@ -28,7 +28,7 @@ st.title("COSCO GREECE Logistics Dashboard 📈")
 # -------------------------------
 
 def load_coordinates():
-    return pd.read_csv(r"data/region_coordinates.csv")  # Make sure CSV has lat, lon, city columns if needed
+    return pd.read_csv("data/region_coordinates.csv")  # Make sure CSV has lat, lon, city columns if needed
 coords_df = load_coordinates()
     
 def load_data(folder_path):
@@ -1273,7 +1273,7 @@ div[data-testid="stMetricValue"] {
 # MAIN APP FLOW
 # ==============================
 
-folder_path = r"data/Master"  # Update this path to your folder containing Excel files
+folder_path = "data/Master"  # Update this path to your folder containing Excel files
 inbound_df, outbound_df = load_data(folder_path)
 
 # -----------------------------
