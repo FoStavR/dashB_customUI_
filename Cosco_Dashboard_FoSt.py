@@ -280,7 +280,7 @@ div[data-testid="stMetricValue"] {
     col1.metric("Total Pallets", int(df['Pallets'].sum()))
     col2.metric("Total SKU", int(df['Sku Qty.'].sum()))
     col3.metric("Total Boxes",int(df['Boxes'].sum()))
-    col4.metric("Total Reels",int(df['Reels'].sum()))
+    col4.metric("Total Reels",int(df['REELS'].sum()))
     col5.metric("Total CBM", round(df['CBM'].sum(),2))
   
     
