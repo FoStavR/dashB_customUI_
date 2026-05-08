@@ -926,66 +926,95 @@ div[data-testid="stMetricValue"] {
     # ------------------------------
     # Pie chart for the percentages
     # ------------------------------    
-    with tg1: 
-       if 'Description' in df.columns:
+       with tg1:
+        if 'Description' in df.columns:
             st.subheader("Top Goods 🏆🔎")
-
+    
             # Count occurrences
             goods_counts = df['Description'].value_counts().reset_index()
             goods_counts.columns = ['Description', 'Count']
-
+    
             # Add percentage
             goods_counts['Percentage'] = (
                 goods_counts['Count'] / goods_counts['Count'].sum() * 100
             ).round(2)
-
-            fig = px.pie(
-                    goods_counts,
-                    names='Description',
-                    values='Percentage',
-                    hole=0,
-                    width=350,
-                    height=300
-                )
-
+    
+            # Sort descending
+            goods_counts = goods_counts.sort_values(by='Count', ascending=False)
+    
+            # Bar Chart
+            fig = px.bar(
+                goods_counts,
+                x='Description',
+                y='Count',
+                text='Percentage',
+                width=500,
+                height=350,
+                color='Count',
+                color_continuous_scale='Blues'
+            )
+    
+            fig.update_traces(
+                texttemplate='%{text}%',
+                textposition='outside'
+            )
+    
             fig.update_layout(
-                    paper_bgcolor='rgba(255, 255, 255, 1)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    margin=dict(t=0, b=0, l=0, r=0)
-                )
-
+                paper_bgcolor='rgba(255,255,255,1)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                margin=dict(t=30, b=30, l=20, r=20),
+                xaxis_title="Goods",
+                yaxis_title="Count",
+                xaxis_tickangle=-45
+            )
+    
             st.plotly_chart(fig, width="stretch")
+    
+    
     with tg2:
         # ==============================
         # 📁 PROJECT ALLOCATION
         # ==============================
         if 'PROJECT' in df.columns and 'Shipping MODE' in df.columns:
-                st.subheader("Project Shipping Mode 📦🔎")
-                
-                # Count projects per shipping mode
-                shipping_counts = df['Shipping MODE'].value_counts().reset_index()
-                shipping_counts.columns = ['Shipping MODE', 'Count']
-                
-                # Create interactive pie chart
-                fig = px.pie(
-                    shipping_counts, 
-                    names='Shipping MODE', 
-                    values='Count',
-                    hole=0,  # 0 for full pie, >0 for donut
-                    width=350, height=300,
-                    color='Shipping MODE',  # gives each mode a different color
-                    color_discrete_sequence=px.colors.qualitative.Safe
     
-                )
-                
-                # Make background transparent
-                fig.update_layout(
-                    paper_bgcolor='rgba(255, 255, 255, 1)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    margin=dict(t=0, b=0, l=0, r=0)
-                )
-                
-                st.plotly_chart(fig, width="stretch")
+            st.subheader("Project Shipping Mode 📦🔎")
+    
+            # Count shipping modes
+            shipping_counts = df['Shipping MODE'].value_counts().reset_index()
+            shipping_counts.columns = ['Shipping MODE', 'Count']
+    
+            # Sort descending
+            shipping_counts = shipping_counts.sort_values(
+                by='Count',
+                ascending=False
+            )
+    
+            # Bar Chart
+            fig = px.bar(
+                shipping_counts,
+                x='Shipping MODE',
+                y='Count',
+                text='Count',
+                width=500,
+                height=350,
+                color='Shipping MODE',
+                color_discrete_sequence=px.colors.qualitative.Safe
+            )
+    
+            fig.update_traces(
+                textposition='outside'
+            )
+    
+            fig.update_layout(
+                paper_bgcolor='rgba(255,255,255,1)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                margin=dict(t=30, b=30, l=20, r=20),
+                xaxis_title="Shipping Mode",
+                yaxis_title="Count",
+                showlegend=False
+            )
+    
+            st.plotly_chart(fig, width="stretch")
 # ==============================
 # ==============================    
 # ==============================
