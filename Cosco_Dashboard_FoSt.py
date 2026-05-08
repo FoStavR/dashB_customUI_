@@ -927,45 +927,45 @@ div[data-testid="stMetricValue"] {
     # Pie chart for the percentages
     # ------------------------------    
     with tg1:
-    if 'Description' in df.columns and 'Shipping MODE' in df.columns:
-
-        st.subheader("Top Goods by Shipping Mode 🏆📦")
-
-        # Group data
-        grouped_goods = (
-            df.groupby(['Description', 'Shipping MODE'])
-            .size()
-            .reset_index(name='Count')
-        )
-
-        # Grouped Bar Chart
-        fig = px.bar(
-            grouped_goods,
-            x='Description',
-            y='Count',
-            color='Shipping MODE',
-            barmode='group',   # 👈 grouped bars
-            width=700,
-            height=400,
-            text='Count',
-            color_discrete_sequence=px.colors.qualitative.Safe
-        )
-
-        fig.update_traces(
-            textposition='outside'
-        )
-
-        fig.update_layout(
-            paper_bgcolor='rgba(255,255,255,1)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            margin=dict(t=30, b=40, l=20, r=20),
-            xaxis_title="Goods Description",
-            yaxis_title="Count",
-            xaxis_tickangle=-45,
-            legend_title="Shipping Mode"
-        )
-
-        st.plotly_chart(fig, width="stretch")
+        if 'Description' in df.columns and 'Shipping MODE' in df.columns:
+    
+            st.subheader("Top Goods by Shipping Mode 🏆📦")
+    
+            # Group data
+            grouped_goods = (
+                df.groupby(['Description', 'Shipping MODE'])
+                .size()
+                .reset_index(name='Count')
+            )
+    
+            # Grouped Bar Chart
+            fig = px.bar(
+                grouped_goods,
+                x='Description',
+                y='Count',
+                color='Shipping MODE',
+                barmode='group',   # 👈 grouped bars
+                width=700,
+                height=400,
+                text='Count',
+                color_discrete_sequence=px.colors.qualitative.Safe
+            )
+    
+            fig.update_traces(
+                textposition='outside'
+            )
+    
+            fig.update_layout(
+                paper_bgcolor='rgba(255,255,255,1)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                margin=dict(t=30, b=40, l=20, r=20),
+                xaxis_title="Goods Description",
+                yaxis_title="Count",
+                xaxis_tickangle=-45,
+                legend_title="Shipping Mode"
+            )
+    
+            st.plotly_chart(fig, width="stretch")
 
 
     with tg2:
