@@ -1714,7 +1714,7 @@ div[data-testid="stMetricValue"] {
                         legend=dict(
                     title=dict(text="")),legend_bgcolor='rgba(0,0,0,0)'
                     )
-
+                fig.update_xaxes(showticklabels=False)
                 
 
                 st.plotly_chart(fig, use_container_width=True)
