@@ -942,8 +942,8 @@ div[data-testid="stMetricValue"] {
                 y='Count',
                 text='Count',
                 color='Description',
-                width=450,
-                height=400
+                width=700,
+                height=500
             )
     
             fig.update_traces(
@@ -981,8 +981,8 @@ div[data-testid="stMetricValue"] {
                 y='Count',
                 text='Count',
                 color='Shipping MODE',
-                width=450,
-                height=400,
+                width=700,
+                height=500,
                 color_discrete_sequence=px.colors.qualitative.Safe
             )
     
