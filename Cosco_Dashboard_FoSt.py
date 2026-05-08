@@ -821,7 +821,7 @@ div[data-testid="stMetricValue"] {
                 yaxis=dict(categoryorder='total ascending'),
                 margin=dict(t=40, b=40, l=40, r=40),
                 paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.1)',
+                plot_bgcolor='rgba(0, 0, 0,0.05)',
                 coloraxis_showscale=False
             )
 
@@ -916,7 +916,7 @@ div[data-testid="stMetricValue"] {
                               legend=dict(
                 title=dict(text="")),
                 paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
+                plot_bgcolor='rgba(0,0,0,0.05)',
                 ) 
 
             st.plotly_chart(fig, use_container_width=True)
@@ -953,7 +953,7 @@ div[data-testid="stMetricValue"] {
     
             fig.update_layout(
                 paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0.05)',
                 margin=dict(t=0, b=0, l=0, r=0),
                 showlegend=False,
                 
@@ -993,7 +993,7 @@ div[data-testid="stMetricValue"] {
     
             fig.update_layout(
                 paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0, 0, 0, 0.05)',
                 margin=dict(t=0, b=0, l=0, r=0),
                 showlegend=False
             )
@@ -1600,7 +1600,7 @@ div[data-testid="stMetricValue"] {
             fig.update_layout(
                         yaxis=dict(categoryorder="total ascending"),
                         margin=dict(t=40, b=40, l=40, r=40),
-                        plot_bgcolor="rgba(0,0,0,0.1)",
+                        plot_bgcolor="rgba(0,0,0,0.05)",
                         paper_bgcolor="rgba(255,255,255,1)",
                         coloraxis_showscale=False,
                         legend=dict(
@@ -1649,7 +1649,7 @@ div[data-testid="stMetricValue"] {
 
             fig.update_layout(
                 paper_bgcolor='rgba(255, 255, 255, 1)',
-               plot_bgcolor='rgba(0, 0, 0, 0.1)',
+               plot_bgcolor='rgba(0, 0, 0, 0.05)',
                 yaxis=dict(categoryorder='total ascending'),
                 margin=dict(t=30, b=30, l=30, r=30),
                 showlegend=True,legend=dict(
@@ -1708,7 +1708,7 @@ div[data-testid="stMetricValue"] {
 
                 fig.update_layout(
                         paper_bgcolor='rgba(255,255,255,1)',
-                        plot_bgcolor='rgba(0,0,0,0.1)',
+                        plot_bgcolor='rgba(0, 0, 0, 0.05)',
                         xaxis=dict(tickangle=-45),  # tilt labels
                         margin=dict(t=40, b=40, l=40, r=40),
                         legend=dict(
@@ -1756,7 +1756,7 @@ div[data-testid="stMetricValue"] {
                     yaxis=dict(categoryorder='total ascending'),
                     margin=dict(t=30, b=30, l=30, r=30),
                     paper_bgcolor='rgba(255,255,255,1)', 
-                    plot_bgcolor='rgba(0,0,0,0.1)',
+                    plot_bgcolor='rgba(0, 0, 0, 0.05)',
                     coloraxis_showscale=False,
                     legend_bgcolor='rgba(0,0,0,0)'
                 )
@@ -1791,7 +1791,7 @@ div[data-testid="stMetricValue"] {
             fig.update_layout(
                 margin=dict(t=30, b=30, l=30, r=30),
                 paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
+                plot_bgcolor='rgba(0, 0, 0, 0.05)',
                 xaxis_title="",
                 yaxis_title="",legend_bgcolor='rgba(0,0,0,0)'
             )
@@ -1825,7 +1825,7 @@ div[data-testid="stMetricValue"] {
             fig.update_layout(
                 margin=dict(t=30, b=30, l=30, r=30),
                 paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
+                plot_bgcolor='rgba(0, 0, 0, 0.05)',
                 xaxis_title="",
                 yaxis_title="",
                 legend=dict(
@@ -1899,7 +1899,7 @@ div[data-testid="stMetricValue"] {
             fig.update_layout(
                 margin=dict(t=30, b=30, l=30, r=30),
                 paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
+                plot_bgcolor='rgba(0, 0, 0, 0.05)',
                 xaxis_title="",
                 yaxis_title="",
                 legend=dict(
@@ -2121,7 +2121,7 @@ div[data-testid="stMetricValue"] {
                 )
             ],
             paper_bgcolor='rgba(255,255,255,1)',
-            plot_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0, 0, 0, 0.05)',
             margin=dict(t=40, b=20, l=20, r=20)
         )
 
@@ -2417,7 +2417,7 @@ div[data-testid="stMetricValue"] {
 
             paper_bgcolor='rgba(255,255,255,1)',
 
-            plot_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0, 0, 0, 0.05)',
 
             height=600,
             
@@ -2478,7 +2478,7 @@ div[data-testid="stMetricValue"] {
                 )
             ],
             paper_bgcolor='rgba(255,255,255,1)',
-            plot_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0, 0, 0, 0.05)',
             margin=dict(t=40, b=20, l=20, r=20)
         )
 
