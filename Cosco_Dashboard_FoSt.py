@@ -774,7 +774,7 @@ div[data-testid="stMetricValue"] {
                 margin=dict(t=20, b=20, l=20, r=20),
                 legend=dict(
                 title=dict(text="")),
-                legend.bgcolor = 'rgba(0, 0, 0, 0)'
+                legend.bgcolor='rgba(0, 0, 0, 0)'
             )
             
             st.plotly_chart(fig, width="stretch")
