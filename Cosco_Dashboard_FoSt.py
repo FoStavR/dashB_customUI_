@@ -771,9 +771,9 @@ div[data-testid="stMetricValue"] {
                 plot_bgcolor='rgba(0, 0, 0, 0.2)',
                 xaxis_title='DC',
                 yaxis_title='Total Shipments',
-                margin=dict(t=0, b=0, l=0, r=0),
-                legend=dict(
-                title=dict(text="")),
+                margin=dict(t=40, b=40, l=40, r=40),
+                legend=dict(font=dict(size=10),
+                title=dict(text=""))
                 
             )
             
