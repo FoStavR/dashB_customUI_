@@ -773,7 +773,8 @@ div[data-testid="stMetricValue"] {
                 yaxis_title='Total Shipments',
                 margin=dict(t=20, b=20, l=20, r=20),
                 legend=dict(
-                title=dict(text=""))
+                title=dict(text="")),
+                legend.bgcolor = 'rgba(0, 0, 0, 0)'
             )
             
             st.plotly_chart(fig, width="stretch")
