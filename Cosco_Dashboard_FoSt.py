@@ -955,7 +955,7 @@ div[data-testid="stMetricValue"] {
                 plot_bgcolor='rgba(0,0,0,0)',
                 margin=dict(t=0, b=0, l=0, r=0),
                 showlegend=False,
-                xaxis_tickangle=-45
+                
             )
     
             st.plotly_chart(fig, use_container_width=False)
