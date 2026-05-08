@@ -776,7 +776,7 @@ div[data-testid="stMetricValue"] {
                 title=dict(text=""))
                 
             )
-            fig.update_xaxes(visible=False)
+            fig.update_xaxes(showticklabels=False)
             st.plotly_chart(fig, width="stretch")
     # ==============================
     # 🚢 TOP VESSELS (INBOUND)
