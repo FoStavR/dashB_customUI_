@@ -771,10 +771,10 @@ div[data-testid="stMetricValue"] {
                 plot_bgcolor='rgba(0, 0, 0, 0.2)',
                 xaxis_title='DC',
                 yaxis_title='Total Shipments',
-                margin=dict(t=20, b=20, l=20, r=20),
+                margin=dict(t=0, b=0, l=0, r=0),
                 legend=dict(
                 title=dict(text="")),
-                legend.bgcolor='rgba(0, 0, 0, 0)'
+                
             )
             
             st.plotly_chart(fig, width="stretch")
