@@ -958,7 +958,7 @@ div[data-testid="stMetricValue"] {
                 xaxis_tickangle=-45
             )
     
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=False)
     
     
     with tg2:
@@ -997,7 +997,7 @@ div[data-testid="stMetricValue"] {
                 showlegend=False
             )
     
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig,use_container_width=False)
 # ==============================
 # ==============================    
 # ==============================
