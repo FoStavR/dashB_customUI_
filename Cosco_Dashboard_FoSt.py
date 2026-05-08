@@ -662,7 +662,7 @@ div[data-testid="stMetricValue"] {
             # Make background transparent
             fig.update_layout(
                 paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.2)',
+                plot_bgcolor='rgba(0,0,0,0.05)',
                 xaxis_title='Vendor',
                 yaxis_title='Number of Shipments',
                 margin=dict(t=40, b=40, l=40, r=40),
@@ -704,7 +704,7 @@ div[data-testid="stMetricValue"] {
 
             fig.update_layout(
                 paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.2)',
+                plot_bgcolor='rgba(0, 0, 0, 0.05)',
                 xaxis_title='Goods Type',
                 yaxis_title='Number of Projects',
                 margin=dict(t=40, b=40, l=40, r=40),
@@ -738,7 +738,7 @@ div[data-testid="stMetricValue"] {
             # Transparent background
             fig.update_layout(
                 paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.2)',
+                plot_bgcolor='rgba(0, 0, 0, 0.05)',
                 xaxis_title='Country',
                 yaxis_title='Number of Projects',
                 margin=dict(t=40, b=40, l=40, r=40),
@@ -768,11 +768,11 @@ div[data-testid="stMetricValue"] {
             # Make background transparent
             fig.update_layout(
                 paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.2)',
+                plot_bgcolor='rgba(0, 0, 0, 0.05)',
                 xaxis_title='DC',
                 yaxis_title='Total Shipments',
                 margin=dict(t=40, b=40, l=40, r=40),
-                legend=dict(font=dict(size=10),
+                legend=dict(
                 title=dict(text=""))
                 
             )
