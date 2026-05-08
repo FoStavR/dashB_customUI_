@@ -926,7 +926,7 @@ div[data-testid="stMetricValue"] {
     # ------------------------------
     # Pie chart for the percentages
     # ------------------------------    
-       with tg1:
+    with tg1:
         if 'Description' in df.columns:
             st.subheader("Top Goods 🏆🔎")
     
