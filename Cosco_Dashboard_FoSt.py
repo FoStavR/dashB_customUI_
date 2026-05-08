@@ -927,28 +927,23 @@ div[data-testid="stMetricValue"] {
     # Pie chart for the percentages
     # ------------------------------    
     with tg1:
-        if 'Description' in df.columns and 'Shipping MODE' in df.columns:
+        if 'Description' in df.columns:
     
-            st.subheader("Top Goods by Shipping Mode 🏆📦")
+            st.subheader("Top Goods 🏆🔎")
     
-            # Group data
-            grouped_goods = (
-                df.groupby(['Description', 'Shipping MODE'])
-                .size()
-                .reset_index(name='Count')
-            )
+            # Count occurrences
+            goods_counts = df['Description'].value_counts().reset_index()
+            goods_counts.columns = ['Description', 'Count']
     
-            # Grouped Bar Chart
+            # Goods Bar Chart
             fig = px.bar(
-                grouped_goods,
+                goods_counts,
                 x='Description',
                 y='Count',
-                color='Shipping MODE',
-                barmode='overlay',   # 👈 grouped bars
-                width=700,
-                height=400,
                 text='Count',
-                color_discrete_sequence=px.colors.qualitative.Safe
+                color='Description',
+                width=350,
+                height=300
             )
     
             fig.update_traces(
@@ -958,41 +953,36 @@ div[data-testid="stMetricValue"] {
             fig.update_layout(
                 paper_bgcolor='rgba(255,255,255,1)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                margin=dict(t=30, b=40, l=20, r=20),
-                xaxis_title="Goods Description",
-                yaxis_title="Count",
-                xaxis_tickangle=-45,
-                legend_title="Shipping Mode"
+                margin=dict(t=0, b=0, l=0, r=0),
+                showlegend=False,
+                xaxis_tickangle=-45
             )
     
             st.plotly_chart(fig, width="stretch")
-
-
+    
+    
     with tg2:
+    
         # ==============================
         # 📁 PROJECT SHIPPING MODE
         # ==============================
         if 'PROJECT' in df.columns and 'Shipping MODE' in df.columns:
     
-            st.subheader("Projects by Shipping Mode 📦📊")
+            st.subheader("Project Shipping Mode 📦🔎")
     
-            # Group data
-            grouped_projects = (
-                df.groupby(['PROJECT', 'Shipping MODE'])
-                .size()
-                .reset_index(name='Count')
-            )
+            # Count shipping modes
+            shipping_counts = df['Shipping MODE'].value_counts().reset_index()
+            shipping_counts.columns = ['Shipping MODE', 'Count']
     
-            # Grouped Bar Chart
+            # Shipping Mode Bar Chart
             fig = px.bar(
-                grouped_projects,
-                x='PROJECT',
+                shipping_counts,
+                x='Shipping MODE',
                 y='Count',
-                color='Shipping MODE',
-                barmode='group',   # 👈 grouped bars
-                width=750,
-                height=400,
                 text='Count',
+                color='Shipping MODE',
+                width=350,
+                height=300,
                 color_discrete_sequence=px.colors.qualitative.Safe
             )
     
@@ -1003,11 +993,8 @@ div[data-testid="stMetricValue"] {
             fig.update_layout(
                 paper_bgcolor='rgba(255,255,255,1)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                margin=dict(t=30, b=40, l=20, r=20),
-                xaxis_title="Project",
-                yaxis_title="Count",
-                xaxis_tickangle=-45,
-                legend_title="Shipping Mode"
+                margin=dict(t=0, b=0, l=0, r=0),
+                showlegend=False
             )
     
             st.plotly_chart(fig, width="stretch")
