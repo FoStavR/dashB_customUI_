@@ -8,15 +8,17 @@ import folium
 from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
+import matplotlib.colors as mcolors
 from folium.plugins import Fullscreen, MarkerCluster
 from folium.plugins import MiniMap
 import plotly.graph_objects as go
+import re 
 
 # ==============================
 # PAGE CONFIG
 # ==============================
-st.set_page_config( page_title="Welcome to COSCO Logistics Dashboard",page_icon="🌐", layout="wide")
-logo = Image.open("Data/logo.png") 
+st.set_page_config( page_title="COSCO Logistics Dashboard",page_icon="🌐", layout="wide")
+logo = Image.open(r"Data/logo.png") 
 st.title("COSCO GREECE Logistics Dashboard 📈")
 
 
@@ -28,7 +30,7 @@ st.title("COSCO GREECE Logistics Dashboard 📈")
 # -------------------------------
 
 def load_coordinates():
-    return pd.read_csv("Data/region_coordinates.csv")  # Make sure CSV has lat, lon, city columns if needed
+    return pd.read_csv(r"Data/region_coordinates.csv")  # Make sure CSV has lat, lon, city columns if needed
 coords_df = load_coordinates()
     
 def load_data(folder_path):
@@ -57,18 +59,10 @@ def load_data(folder_path):
 
 
 st.sidebar.image(logo, width='stretch')
-# ==============================
+# ============================== 
 # FILTER FUNCTION (SMART VERSION + DATE SAFE)
-# ==============================
-def clean_series(s):
-    """Normalize categorical columns: strip, upper, collapse spaces"""
-    return (
-        s.dropna()
-        .astype(str)
-        .str.strip()
-        .str.upper()
-        .str.replace(r'\s+', ' ', regex=True)
-    )
+# ============================== 
+
 def apply_filters(df):
 
     st.sidebar.header("Filters ≡")
@@ -76,10 +70,8 @@ def apply_filters(df):
     # ------------------------------
     # 🔄 RESET ALL FILTERS BUTTON
     # ------------------------------
-    # Reset all filters automatically
     if st.sidebar.button("🔄 Reset All Filters", use_container_width=True):
         for key in list(st.session_state.keys()):
-            # Use empty list for multiselect filters
             if key.startswith("filter_"):
                 if "date" in key:
                     st.session_state[key] = None
@@ -87,25 +79,69 @@ def apply_filters(df):
                     st.session_state[key] = []
         st.rerun()
 
+    # ------------------------------
+    # CLEAN COLUMN NAMES
+    # ------------------------------
+    df = df.copy()
     df.columns = df.columns.str.strip()
-    filtered_df = df.copy()
 
     # ------------------------------
-    # 📅 DATE FILTER
+    # HELPER FUNCTIONS
     # ------------------------------
+    def clean_series_for_filter(s):
+        return (
+            s.fillna('')
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .str.replace(r'\s+', ' ', regex=True)
+        )
+
+    def clean_series_for_ui(s):
+        cleaned = clean_series_for_filter(s)
+        return cleaned[cleaned != '']
+
+    def apply_single_filter(dataframe, column, selected_values):
+        if selected_values:
+            return dataframe[
+                clean_series_for_filter(dataframe[column]).isin(selected_values)
+            ]
+        return dataframe
+
+    # ------------------------------
+    # INITIAL FILTERED DF
+    # ------------------------------
+    filtered_df = df.copy()
+
+    # ==========================================================
+    # 📅 DATE FILTER (UNCHANGED)
+    # ==========================================================
     date_column = None
+
     if "W\H/PORT Outbound date" in df.columns:
         date_column = "W\H/PORT Outbound date"
+
     elif "WH Inbound date" in df.columns:
         date_column = "WH Inbound date"
 
     if date_column:
+
         filtered_df[date_column] = pd.to_datetime(
-            filtered_df[date_column], errors="coerce"
+            filtered_df[date_column],
+            dayfirst=True,
+            errors="coerce"
         )
+
+        today = pd.Timestamp.today().normalize()
+
+        filtered_df = filtered_df[
+            filtered_df[date_column] <= today
+        ]
+
         valid_dates = filtered_df[date_column].dropna()
 
         if not valid_dates.empty:
+
             min_date = valid_dates.min()
             max_date = valid_dates.max()
 
@@ -118,111 +154,146 @@ def apply_filters(df):
             )
 
             if selected_dates and len(selected_dates) == 2:
+
                 start_date = pd.to_datetime(selected_dates[0])
                 end_date = pd.to_datetime(selected_dates[1])
 
                 filtered_df = filtered_df[
                     (filtered_df[date_column].isna()) |
-                    ((filtered_df[date_column] >= start_date) &
-                     (filtered_df[date_column] <= end_date))
+                    (
+                        (filtered_df[date_column] >= start_date) &
+                        (filtered_df[date_column] <= end_date)
+                    )
                 ]
 
-    # ------------------------------
-    # PROJECT FILTER
-    # ------------------------------
-    if 'PROJECT' in df.columns:
-        projects = st.sidebar.multiselect(
-            "Project 💾",
-            sorted(clean_series(df['PROJECT']).unique()),
-            key="filter_project"
-        )
-        if projects:
-            filtered_df = filtered_df[
-                clean_series(filtered_df['PROJECT']).isin(projects)
-            ]
+    # ==========================================================
+    # FILTER CONFIGURATION
+    # ==========================================================
+    filter_config = [
+        {
+            "column": "PROJECT",
+            "label": "Project 💾",
+            "key": "filter_project"
+        },
+        {
+            "column": "Country",
+            "label": "Country 🗺️📍",
+            "key": "filter_country"
+        },
+        {
+            "column": "Destination Country",
+            "label": "Destination Country 🗺️📍",
+            "key": "filter_dest_country"
+        },
+        {
+            "column": "Vendor",
+            "label": "Vendor ⛓️",
+            "key": "filter_vendor"
+        },
+        {
+            "column": "FDC",
+            "label": "DC 🏬🚚",
+            "key": "filter_fdc"
+        },
+        {
+            "column": "FDC/PORT",
+            "label": "DC 🏬🚚",
+            "key": "filter_fdc_port"
+        },
+        {
+            "column": "Description",
+            "label": "Description 📝",
+            "key": "filter_description"
+        }
+    ]
 
-    # ------------------------------
-    # COUNTRY FILTER (Inbound)
-    # ------------------------------
-    if 'Country' in df.columns:
-        countries = st.sidebar.multiselect(
-            "Country 🗺️📍",
-            sorted(clean_series(df['Country']).unique()),
-            key="filter_country"
-        )
-        if countries:
-            filtered_df = filtered_df[
-                clean_series(filtered_df['Country']).isin(countries)
-            ]
+    # ==========================================================
+    # READ CURRENT SELECTIONS
+    # ==========================================================
+    current_selections = {}
 
-    # ------------------------------
-    # DESTINATION COUNTRY FILTER (Outbound)
-    # ------------------------------
-    if 'Destination Country' in df.columns:
-        dest_countries = st.sidebar.multiselect(
-            "Destination Country 🗺️📍",
-            sorted(clean_series(df['Destination Country']).unique()),
-            key="filter_dest_country"
-        )
-        if dest_countries:
-            filtered_df = filtered_df[
-                clean_series(filtered_df['Destination Country']).isin(dest_countries)
-            ]
+    for config in filter_config:
 
-    # ------------------------------
-    # VENDOR FILTER
-    # ------------------------------
-    if 'Vendor' in df.columns:
-        vendors = st.sidebar.multiselect(
-            "Vendor ⛓️",
-            sorted(clean_series(df['Vendor']).unique()),
-            key="filter_vendor"
-        )
-        if vendors:
-            filtered_df = filtered_df[
-                clean_series(filtered_df['Vendor']).isin(vendors)
-            ]
+        column = config["column"]
+        key = config["key"]
 
-    # ------------------------------
-    # DC FILTER (Inbound)
-    # ------------------------------
-    if 'FDC' in df.columns:
-        fdc = st.sidebar.multiselect(
-            "DC 🏬🚚",
-            sorted(clean_series(df['FDC']).unique()),
-            key="filter_fdc"
-        )
-        if fdc:
-            filtered_df = filtered_df[
-                clean_series(filtered_df['FDC']).isin(fdc)
-            ]
+        if column in filtered_df.columns:
+            current_selections[column] = st.session_state.get(key, [])
+        else:
+            current_selections[column] = []
 
-    # ------------------------------
-    # DC/PORT FILTER (Outbound)
-    # ------------------------------
-    if 'FDC/PORT' in df.columns:
-        fdc_port = st.sidebar.multiselect(
-            "DC 🏬🚚",
-            sorted(clean_series(df['FDC/PORT']).unique()),
-            key="filter_fdc_port"
+    # ==========================================================
+    # BUILD DYNAMIC FILTERS
+    # ==========================================================
+    for config in filter_config:
+
+        column = config["column"]
+        label = config["label"]
+        key = config["key"]
+
+        if column not in filtered_df.columns:
+            continue
+
+        # -----------------------------------
+        # Create temp df applying ALL OTHER filters
+        # -----------------------------------
+        temp_df = filtered_df.copy()
+
+        for other_column, selected_values in current_selections.items():
+
+            if other_column == column:
+                continue
+
+            if other_column in temp_df.columns:
+                temp_df = apply_single_filter(
+                    temp_df,
+                    other_column,
+                    selected_values
+                )
+
+        # -----------------------------------
+        # Build options dynamically
+        # -----------------------------------
+        options = sorted(
+            clean_series_for_ui(temp_df[column]).unique()
         )
-        if fdc_port:
-            filtered_df = filtered_df[
-                clean_series(filtered_df['FDC/PORT']).isin(fdc_port)
-            ]
-    
-    if 'Description' in df.columns:
-        descriptions = st.sidebar.multiselect(
-                "Description 📝",
-                sorted(clean_series(df['Description']).unique()),
-                key="filter_description" 
-            )
-        if descriptions:
-                filtered_df = filtered_df[
-                    clean_series(filtered_df['Description']).isin(descriptions)
-                ]    
+
+        # Keep selected values visible
+        options = sorted(
+            set(options) | set(current_selections[column])
+        )
+
+        # -----------------------------------
+        # Render multiselect
+        # -----------------------------------
+        selected = st.sidebar.multiselect(
+            label,
+            options,
+            default=current_selections[column],
+            key=key
+        )
+
+        current_selections[column] = selected
+
+    # ==========================================================
+    # APPLY ALL FILTERS TO FINAL DATAFRAME
+    # ==========================================================
+    for config in filter_config:
+
+        column = config["column"]
+
+        if column not in filtered_df.columns:
+            continue
+
+        selected_values = current_selections[column]
+
+        filtered_df = apply_single_filter(
+            filtered_df,
+            column,
+            selected_values
+        )
+
     return filtered_df
-
 # ==============================
 # INBOUND DASHBOARD
 # ==============================
@@ -240,9 +311,9 @@ def show_inbound_dashboard(df):
     numeric_cols = ['CBM', 'KG', 'Reels', 'Boxes', 'Pallets', 'Cartons','Sku Qty.']
     for col in numeric_cols:
         
-        if col in df.columns:
+        if col in df.columns: 
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-
+    
     # ==============================
     # 🔹 CORE KPIs (Volume Based)
     # ==============================
@@ -281,8 +352,289 @@ div[data-testid="stMetricValue"] {
     col2.metric("Total SKU", int(df['Sku Qty.'].sum()))
     col3.metric("Total Boxes",int(df['Boxes'].sum()))
     col4.metric("Total Reels",int(df['REELS'].sum()))
-    col5.metric("Total CBM", round(df['CBM'].sum(),2))
-  
+    col5.metric("Total CBM", round(df['CBM'].sum(),2)) 
+    # ==============================
+    # 📈 MONTHLY TREND ANALYSIS
+    # ==============================
+    # -----------------------------------
+    # Detect correct date column
+    # -----------------------------------
+    date_column = None
+
+    if "WH Inbound date" in df.columns:
+        date_column = "WH Inbound date"
+
+    elif "W\\H/PORT Outbound date" in df.columns:
+        date_column = "W\\H/PORT Outbound date"
+
+    # -----------------------------------
+    # Continue only if date exists
+    # -----------------------------------
+    if date_column:
+
+        # Convert to datetime safely
+        df[date_column] = pd.to_datetime(
+            df[date_column],
+            errors='coerce'
+        )
+
+        # Remove invalid dates
+        trend_df = df.dropna(subset=[date_column]).copy()
+
+        # Create month column
+        trend_df["Month"] = (
+            trend_df[date_column]
+            .dt.to_period("M")
+            .astype(str)
+        )
+
+        # -----------------------------------
+        # Build Monthly Aggregation
+        # -----------------------------------
+        monthly_trend = (
+            trend_df.groupby("Month")
+            .agg({
+                "CBM": "sum",
+                "Pallets": "sum",
+                "Boxes": "sum"
+            })
+            .reset_index()
+        )
+
+        # Add shipment count
+        monthly_trend["Shipments"] = (
+            trend_df.groupby("Month")
+            .size()
+            .values
+        )
+
+        # -----------------------------------
+        # Optional Metrics Safety
+        # -----------------------------------
+        if "REELS" in trend_df.columns:
+            monthly_trend["Reels"] = (
+                trend_df.groupby("Month")["REELS"]
+                .sum()
+                .values
+            )
+
+        if "Sku Qty." in trend_df.columns:
+            monthly_trend["SKU"] = (
+                trend_df.groupby("Month")["Sku Qty."]
+                .sum()
+                .values
+            )
+        
+        # -----------------------------------
+        # Monthly Trend Table
+        # -----------------------------------
+        st.subheader("Monthly Summary Table 📋")
+
+        display_table = monthly_trend.copy()
+        # ---------------------------------
+        # Format numeric columns
+        # ---------------------------------
+        for col in display_table.columns:
+
+            if col != "CBM" and pd.api.types.is_numeric_dtype(display_table[col]):
+                display_table[col] = display_table[col].astype(int)
+        # ---------------------------------
+        # Styled Table
+        # ---------------------------------
+        styled_table = (
+            display_table.style
+
+            # Hide index
+            .hide(axis="index")
+
+            # Body styling
+            .set_properties(**{
+                'background-color': '#f7f8fa',   # softer body tone
+                'color': '#2b2b2b',
+                'border-color': '#e2e6ea',
+                'text-align': 'left'
+            })
+
+            # Header + table styling
+            .set_table_styles([
+
+                # Headers
+                {
+                    'selector': 'th',
+                    'props': [
+                        ('background-color', '#d2d8e1'),
+                        ('color', '#111111'),          # darker header text
+                        ('font-weight', 'bold'),
+                        ('text-align', 'left'),
+                        ('padding', '10px'),
+                        ('font-size', '13px'),
+                        ('border', '1px solid #c3cad4')
+                    ]
+                },
+
+                # Body cells
+                {
+                    'selector': 'td',
+                    'props': [
+                        ('padding', '8px'),
+                        ('font-size', '12px'),
+                        ('text-align', 'left'),
+                        ('border', '1px solid #e1e5ea')
+                    ]
+                },
+
+                # Hide row indexes completely
+                {
+                    'selector': '.row_heading',
+                    'props': [
+                        ('display', 'none')
+                    ]
+                },
+
+                # Hide top-left blank cell
+                {
+                    'selector': '.blank',
+                    'props': [
+                        ('display', 'none')
+                    ]
+                },
+
+                # Table styling
+                {
+                    'selector': 'table',
+                    'props': [
+                        ('border-collapse', 'collapse'),
+                        ('width', '100%'),
+                        ('font-family', 'Arial, sans-serif')
+                    ]
+                }
+            ])
+        )
+
+        # Display table
+        st.write(styled_table)
+
+      
+        # -----------------------------------
+        # Metric Selector
+        # -----------------------------------
+        st.subheader("Monthly Trend Analysis 📈")
+        available_metrics = [
+            "Shipments",
+            "CBM",
+            "Pallets",
+            "Boxes"
+        ]
+
+        if "Reels" in monthly_trend.columns:
+            available_metrics.append("Reels")
+
+        if "SKU" in monthly_trend.columns:
+            available_metrics.append("SKU")
+
+        selected_metric = st.selectbox(
+            "Select Monthly KPI",
+            available_metrics
+        )
+
+        # -----------------------------------
+        # Month-over-Month Growth
+        # -----------------------------------
+        monthly_trend["MoM Growth %"] = (
+            monthly_trend[selected_metric]
+            .pct_change() * 100
+        ).round(2)
+    
+        # -----------------------------------
+        # KPI CARDS
+        # -----------------------------------
+        latest_value = monthly_trend[selected_metric].iloc[-1]
+
+        if len(monthly_trend) > 1:
+            previous_value = monthly_trend[selected_metric].iloc[-2]
+
+            growth = (
+                ((latest_value - previous_value) / previous_value) * 100
+                if previous_value != 0 else 0
+            )
+        else:
+            growth = 0
+
+        k1, k2, k3 = st.columns(3)
+
+        k1.metric(
+            f"Latest {selected_metric}",
+            f"{latest_value:,.0f}"
+        )
+
+        k2.metric(
+            "MoM Growth %",
+            f"{growth:.2f}%"
+        )
+
+        k3.metric(
+            "Total Months",
+            len(monthly_trend)
+        )
+
+        # -----------------------------------
+        # Main Trend Chart
+        # -----------------------------------
+        fig = px.line(
+            monthly_trend,
+            x="Month",
+            y=selected_metric,
+            markers=True,
+            text=selected_metric
+        )
+
+        fig.update_traces(
+            textposition="top center",
+            line=dict(width=4)
+        )
+
+        fig.update_layout(
+            paper_bgcolor='rgba(255,255,255,1)',
+            plot_bgcolor='rgba(0,0,0,0.05)',
+            xaxis_title="Month",
+            yaxis_title=selected_metric,
+            hovermode="x unified",
+            margin=dict(t=40, b=40, l=40, r=40)
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        
+
+        # -----------------------------------
+        # Monthly Distribution Bar Chart
+        # -----------------------------------
+        st.subheader(f"{selected_metric} Distribution by Month 📊")
+
+        bar_fig = px.bar(
+            monthly_trend,
+            x="Month",
+            y=selected_metric,
+            text=selected_metric,
+            color=selected_metric,
+            color_continuous_scale="solar"
+        )
+
+        bar_fig.update_layout(
+            paper_bgcolor='rgba(255,255,255,1)',
+            plot_bgcolor='rgba(0,0,0,0.05)',
+            xaxis_title="Month",
+            yaxis_title=selected_metric,
+            coloraxis_showscale=False,
+            margin=dict(t=40, b=40, l=40, r=40)
+        )
+
+        st.plotly_chart(bar_fig, use_container_width=True)
+
+        
+
+    else:
+        st.warning("No valid date column found for trend analysis.")
     
     ch1, ch2 = st.columns(2)
     with ch1:
@@ -634,12 +986,12 @@ div[data-testid="stMetricValue"] {
                 )
                 
                 st.plotly_chart(fig, width="stretch")
-
-        
-
-
-
-# ==============================c
+# ==============================
+# ==============================    
+# ==============================
+# ==============================
+# ==============================
+# ==============================
 # OUTBOUND DASHBOARD
 # ==============================
 def show_outbound_dashboard(df):
@@ -695,7 +1047,7 @@ div[data-testid="stMetricValue"] {
         # ===============================
         # 📍 Unique Regions Metric
         # ===============================
-
+ 
         if 'Region' in df.columns:
 
             # Extract standardized region value
@@ -703,9 +1055,9 @@ div[data-testid="stMetricValue"] {
                 value = str(value).strip()
                 parts = [p.strip() for p in value.split(',')]
 
-                if len(parts) == 3:
+                if len(parts) == 3: 
                     return parts[1]  # middle value
-                else:
+                else: 
                     return parts[0]  # single value or fallback
 
             # Apply transformation
@@ -738,7 +1090,7 @@ div[data-testid="stMetricValue"] {
         "Total Boxes",
         int(df['Boxes'].sum()) if 'Boxes' in df.columns else 0
     )
-    col7.metric("Total Reels",int(df['Reels'].sum()))
+    col7.metric("Total Reels",int(df['REELS'].sum()))
     col8.metric("Total CBM", round(df['CBM'].sum(),2))
     #######################################################################
     ## ==============================
@@ -761,10 +1113,10 @@ div[data-testid="stMetricValue"] {
                 grouped.groupby(['Region', 'Destination Country'])
                 .apply(lambda g: pd.Series({
                     'Shipments': g['Project_Shipments'].sum(),
-                    'Project_Shipments_Combined': ", ".join(
-                        f"{proj} ({cnt})"
-                        for proj, cnt in zip(g['PROJECT'], g['Project_Shipments'])
-                    )
+                    'Project_Shipments_Combined': "<br>".join(
+                    f"{proj} ({cnt})"
+                    for proj, cnt in zip(g['PROJECT'], g['Project_Shipments'])
+                )
                 }))
                 .reset_index()
             )
@@ -919,7 +1271,288 @@ div[data-testid="stMetricValue"] {
                     force_separate_button=True
                 ).add_to(m)
                 st_folium(m, use_container_width=True, height=400) 
+    # ==============================
+    # 📈 MONTHLY TREND ANALYSIS
+    # ==============================
+    # -----------------------------------
+    # Detect correct date column
+    # -----------------------------------
+    date_column = None
+
+    if "WH Inbound date" in df.columns:
+        date_column = "WH Inbound date"
+
+    elif "W\\H/PORT Outbound date" in df.columns:
+        date_column = "W\\H/PORT Outbound date"
+
+    # -----------------------------------
+    # Continue only if date exists
+    # -----------------------------------
+    if date_column:
+
+        # Convert to datetime safely
+        df[date_column] = pd.to_datetime(
+            df[date_column],
+            errors='coerce'
+        )
+
+        # Remove invalid dates
+        trend_df = df.dropna(subset=[date_column]).copy()
+
+        # Create month column
+        trend_df["Month"] = (
+            trend_df[date_column]
+            .dt.to_period("M")
+            .astype(str)
+        )
+
+        # -----------------------------------
+        # Build Monthly Aggregation
+        # -----------------------------------
+        monthly_trend = (
+            trend_df.groupby("Month")
+            .agg({
+                "CBM": "sum",
+                "Pallets": "sum",
+                "Boxes": "sum"
+            })
+            .reset_index()
+        )
+
+        # Add shipment count
+        monthly_trend["Shipments"] = (
+            trend_df.groupby("Month")
+            .size()
+            .values
+        )
+
+        # -----------------------------------
+        # Optional Metrics Safety
+        # -----------------------------------
+        if "REELS" in trend_df.columns:
+            monthly_trend["Reels"] = (
+                trend_df.groupby("Month")["REELS"]
+                .sum()
+                .values
+            )
+
+        if "Sku Qty." in trend_df.columns:
+            monthly_trend["SKU"] = (
+                trend_df.groupby("Month")["Sku Qty."]
+                .sum()
+                .values
+            )
         
+        # -----------------------------------
+        # Monthly Trend Table
+        # -----------------------------------
+        st.subheader("Monthly Summary Table 📋")
+
+        display_table = monthly_trend.copy()
+        # ---------------------------------
+        # Format numeric columns
+        # ---------------------------------
+        for col in display_table.columns:
+
+            if col != "CBM" and pd.api.types.is_numeric_dtype(display_table[col]):
+                display_table[col] = display_table[col].astype(int)
+        # ---------------------------------
+        # Styled Table
+        # ---------------------------------
+        styled_table = (
+            display_table.style
+
+            # Hide index
+            .hide(axis="index")
+
+            # Body styling
+            .set_properties(**{
+                'background-color': '#f7f8fa',   # softer body tone
+                'color': '#2b2b2b',
+                'border-color': '#e2e6ea',
+                'text-align': 'left'
+            })
+
+            # Header + table styling
+            .set_table_styles([
+
+                # Headers
+                {
+                    'selector': 'th',
+                    'props': [
+                        ('background-color', '#d2d8e1'),
+                        ('color', '#111111'),          # darker header text
+                        ('font-weight', 'bold'),
+                        ('text-align', 'left'),
+                        ('padding', '10px'),
+                        ('font-size', '13px'),
+                        ('border', '1px solid #c3cad4')
+                    ]
+                },
+
+                # Body cells
+                {
+                    'selector': 'td',
+                    'props': [
+                        ('padding', '8px'),
+                        ('font-size', '12px'),
+                        ('text-align', 'left'),
+                        ('border', '1px solid #e1e5ea')
+                    ]
+                },
+
+                # Hide row indexes completely
+                {
+                    'selector': '.row_heading',
+                    'props': [
+                        ('display', 'none')
+                    ]
+                },
+
+                # Hide top-left blank cell
+                {
+                    'selector': '.blank',
+                    'props': [
+                        ('display', 'none')
+                    ]
+                },
+
+                # Table styling
+                {
+                    'selector': 'table',
+                    'props': [
+                        ('border-collapse', 'collapse'),
+                        ('width', '100%'),
+                        ('font-family', 'Arial, sans-serif')
+                    ]
+                }
+            ])
+        )
+
+        # Display table
+        st.write(styled_table)
+
+      
+        # -----------------------------------
+        # Metric Selector
+        # -----------------------------------
+        st.subheader("Monthly Trend Analysis 📈")
+        available_metrics = [
+            "Shipments",
+            "CBM",
+            "Pallets",
+            "Boxes"
+        ]
+
+        if "Reels" in monthly_trend.columns:
+            available_metrics.append("Reels")
+
+        if "SKU" in monthly_trend.columns:
+            available_metrics.append("SKU")
+
+        selected_metric = st.selectbox(
+            "Select Monthly KPI",
+            available_metrics
+        )
+
+        # -----------------------------------
+        # Month-over-Month Growth
+        # -----------------------------------
+        monthly_trend["MoM Growth %"] = (
+            monthly_trend[selected_metric]
+            .pct_change() * 100
+        ).round(2)
+    
+        # -----------------------------------
+        # KPI CARDS
+        # -----------------------------------
+        latest_value = monthly_trend[selected_metric].iloc[-1]
+
+        if len(monthly_trend) > 1:
+            previous_value = monthly_trend[selected_metric].iloc[-2]
+
+            growth = (
+                ((latest_value - previous_value) / previous_value) * 100
+                if previous_value != 0 else 0
+            )
+        else:
+            growth = 0
+
+        k1, k2, k3 = st.columns(3)
+
+        k1.metric(
+            f"Latest {selected_metric}",
+            f"{latest_value:,.0f}"
+        )
+
+        k2.metric(
+            "MoM Growth %",
+            f"{growth:.2f}%"
+        )
+
+        k3.metric(
+            "Total Months",
+            len(monthly_trend)
+        )
+
+        # -----------------------------------
+        # Main Trend Chart
+        # -----------------------------------
+        fig = px.line(
+            monthly_trend,
+            x="Month",
+            y=selected_metric,
+            markers=True,
+            text=selected_metric
+        )
+
+        fig.update_traces(
+            textposition="top center",
+            line=dict(width=4)
+        )
+
+        fig.update_layout(
+            paper_bgcolor='rgba(255,255,255,1)',
+            plot_bgcolor='rgba(0,0,0,0.05)',
+            xaxis_title="Month",
+            yaxis_title=selected_metric,
+            hovermode="x unified",
+            margin=dict(t=40, b=40, l=40, r=40)
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        
+
+        # -----------------------------------
+        # Monthly Distribution Bar Chart
+        # -----------------------------------
+        st.subheader(f"{selected_metric} Distribution by Month 📊")
+
+        bar_fig = px.bar(
+            monthly_trend,
+            x="Month",
+            y=selected_metric,
+            text=selected_metric,
+            color=selected_metric,
+            color_continuous_scale="agsunset"
+        )
+
+        bar_fig.update_layout(
+            paper_bgcolor='rgba(255,255,255,1)',
+            plot_bgcolor='rgba(0,0,0,0.05)',
+            xaxis_title="Month",
+            yaxis_title=selected_metric,
+            coloraxis_showscale=False,
+            margin=dict(t=40, b=40, l=40, r=40)
+        )
+
+        st.plotly_chart(bar_fig, use_container_width=True)
+
+        
+
+    else:
+        st.warning("No valid date column found for trend analysis.")    
     mpc1,mpc2= st.columns(2)
     with mpc1:
         # ==============================
@@ -1122,13 +1755,13 @@ div[data-testid="stMetricValue"] {
             
        
     
-    col1,col2,col3,col4 = st.columns(4)
+    col1,col2 = st.columns(2)
     with col1:
         # ==============================
         # 📑 CUSTOM FORMALITIES
         # ==============================
         if 'CUSTOMS FORMALITIES' in df.columns:
-            st.subheader("Custom Formalities📑🔎")
+            st.subheader("Custom Formalities📑🔎") 
 
             customs_counts = df['CUSTOMS FORMALITIES'].value_counts().reset_index()
             customs_counts.columns = ['Formality', 'Count']
@@ -1153,21 +1786,21 @@ div[data-testid="stMetricValue"] {
            
 
             st.plotly_chart(fig, use_container_width=True)
-    with col2:
+    with col1:
         # ==============================
         # 📦 CONTAINER SIZE
         # ============================== 
         if 'Container Size/type' in df.columns:
             st.subheader("Container Size 🏗️🔎")
 
-            count_20 = df['Container Size/type'].astype(str).str.count(r"20'")
-            count_40 = df['Container Size/type'].astype(str).str.count(r"40'")
+            count_20 = df['Container Size/type'].astype(str).str.count(r"20")
+            count_40 = df['Container Size/type'].astype(str).str.count(r"40") 
 
-            container_counts = pd.DataFrame({
-                "Size": ["20'", "40'"],
+            container_counts = pd.DataFrame({ 
+                "Size": ["20'", "40'"], 
                 "Count": [count_20.sum(), count_40.sum()]
             })
-
+ 
             fig = px.bar(
                 container_counts,
                 x='Size',
@@ -1190,7 +1823,7 @@ div[data-testid="stMetricValue"] {
             
 
             st.plotly_chart(fig, use_container_width=True)
-    with col3:
+    with col2:
         # ==============================
         # 📦 GOODS TYPE
         # ==============================
@@ -1223,7 +1856,7 @@ div[data-testid="stMetricValue"] {
             fig.update_traces(textposition='outside')
 
             st.plotly_chart(fig, use_container_width=True)
-    with col4:
+    with col2:
         # ==============================
         # 🚚 SHIPPING MODE
         # ==============================
@@ -1258,16 +1891,699 @@ div[data-testid="stMetricValue"] {
                 yaxis_title="",
                 legend=dict(
                 title=dict(text="")),
-                legend_bgcolor='rgba(0,0,0,0)'
+                legend_bgcolor='rgba(0,0,0,0)',
+                
             )
 
             
 
             st.plotly_chart(fig, use_container_width=True)
+# ==============================
+# ==============================    
+# ==============================
+# ==============================
+# ==============================
+# ==============================
+# OVERVIEW DASHBOARD
+# ==============================   
+def show_overview_dashboard(inbound_df, outbound_df):
+
+    st.header("Overview Analysis Dashboard 📊")
+
+    # -----------------------------------
+    # Clean column names
+    # -----------------------------------
+    inbound_df.columns = inbound_df.columns.str.strip()
+    outbound_df.columns = outbound_df.columns.str.strip()
+
+    # -----------------------------------
+    # Safe numeric conversion
+    # -----------------------------------
+    numeric_cols = [
+        'CBM',
+        'Boxes',
+        'Pallets',
+        'REELS',
+        'Sku Qty.'
+    ]
+
+    for col in numeric_cols:
+
+        if col in inbound_df.columns:
+            inbound_df[col] = pd.to_numeric(
+                inbound_df[col],
+                errors='coerce'
+            ).fillna(0)
+
+        if col in outbound_df.columns:
+            outbound_df[col] = pd.to_numeric(
+                outbound_df[col],
+                errors='coerce'
+            ).fillna(0)
+
+    # =====================================
+    # KPI CALCULATIONS
+    # =====================================
+    inbound_shipments = len(inbound_df)
+    outbound_shipments = len(outbound_df)
+
+    total_shipments = (
+        inbound_shipments +
+        outbound_shipments
+    )
+
+    inbound_cbm = inbound_df['CBM'].sum()
+    outbound_cbm = outbound_df['CBM'].sum()
+
+    total_cbm = inbound_cbm + outbound_cbm
+
+    inbound_pallets = inbound_df['Pallets'].sum()
+    outbound_pallets = outbound_df['Pallets'].sum()
+
     
-    
+ # ==============================
+    # 🔹 CORE KPIs (Volume Based)
+    # ==============================
+    st.markdown("""
+<style>
+/* Card container */
+div[data-testid="stMetric"] {
+    border: 1px solid #e6e6e6;
+    padding: 14px;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Label (small text) */
+div[data-testid="stMetricLabel"] {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Value (big number) */
+div[data-testid="stMetricValue"] {
+    font-weight: 700;
+    font-size: 20px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+    # =====================================
+    # EXECUTIVE KPI CARDS
+    # =====================================
+    inbound_monthly = build_monthly(
+    inbound_df,
+        "WH Inbound date",
+        "Inbound"
+    )
+
+    outbound_monthly = build_monthly(
+        outbound_df,
+        "W\\H/PORT Outbound date",
+        "Outbound"
+    )
+    overview_monthly = pd.merge(
+    inbound_monthly,
+    outbound_monthly,
+    on="Month",
+    how="outer"
+    ) 
+
+    overview_monthly = (
+        overview_monthly
+        .sort_values("Month")
+        .fillna(0)
+    )
+    overview_monthly["Total_Shipments"] = (
+    overview_monthly["Inbound_Shipments"] +
+    overview_monthly["Outbound_Shipments"]
+)
+
+    peak_idx = overview_monthly["Total_Shipments"].idxmax()
+
+    peak_month = overview_monthly.loc[peak_idx, "Month"]
+    peak_value = overview_monthly.loc[peak_idx, "Total_Shipments"]
+    overview_monthly["Total_CBM"] = (
+    overview_monthly["Inbound_CBM"] +
+    overview_monthly["Outbound_CBM"]
+)
+
+    avg_monthly_flow = (
+        overview_monthly["Total_CBM"]
+        .mean()
+    )
+    total_cbm = (
+    overview_monthly["Inbound_CBM"].sum() +
+    overview_monthly["Outbound_CBM"].sum()
+)
+
     
 
+    flow_balance_ratio = (
+    inbound_shipments / outbound_shipments
+    if outbound_shipments != 0 else 0
+)
+    
+    st.subheader("Operational Overview KPIs 🚀")
+    col1, col2, col3 = st.columns(3) 
+    col1.metric( "Total Shipments", f"{total_shipments:,}" ) 
+    col2.metric( "Inbound Shipments", f"{inbound_shipments:,}" ) 
+    col3.metric( "Outbound Shipments", f"{outbound_shipments:,}" ) 
+    col4, col5, col6 = st.columns(3) 
+    col4.metric( "Total CBM", f"{total_cbm:,.2f}" ) 
+    col5.metric( "Inbound CBM", f"{inbound_cbm:,.2f}" ) 
+    col6.metric( "Outbound CBM", f"{outbound_cbm:,.2f}" )
+    k1, k2, k3 = st.columns(3)
+
+    k1.metric(
+        "Peak Operational Month",
+        peak_month,
+        f"{int(peak_value)} shipments that month"
+    )
+
+    k2.metric(
+        "Avg Monthly Flow","Total CBM / Month",
+        f"{avg_monthly_flow:,.1f} CBM"
+    )
+
+    k3.metric(
+        "Flow Balance Ratio ⚖️","Total Inbound / Outbound Shipments",
+        f"{flow_balance_ratio:,.2f}"
+    )
+    
+    g1, g2 = st.columns(2)
+
+    with g1:
+        st.subheader("Total Shipment Distribution 📦")
+        shipments_df = pd.DataFrame({
+    "Type": ["Inbound", "Outbound"],
+    "Value": [inbound_shipments, outbound_shipments]
+    })
+
+        fig_shipments = px.pie(
+            shipments_df,
+            names="Type",
+            values="Value",
+            hole=0.3,
+            color="Type",
+            color_discrete_map={
+                "Inbound": "#1f77b4",
+                "Outbound": "#ff7f0e"
+            }
+        )
+
+        fig_shipments.update_traces(
+            textinfo="percent+label"
+        )
+
+        fig_shipments.update_layout(
+            annotations=[
+                dict(
+                    text=f"{total_shipments:,}<br>Total",
+                    x=0.5,
+                    y=0.5,
+                    font_size=18,
+                    showarrow=False
+                )
+            ],
+            paper_bgcolor='rgba(255,255,255,1)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(t=40, b=20, l=20, r=20)
+        )
+
+        st.plotly_chart(fig_shipments, use_container_width=True)
+
+    with g2:
+        
+        stacked_df = overview_monthly[
+        [
+            "Month",
+            "Inbound_Shipments",
+            "Outbound_Shipments"
+        ]
+    ].copy()
+
+        stacked_df = stacked_df.melt(
+            id_vars="Month",
+            value_vars=[
+                "Inbound_Shipments",
+                "Outbound_Shipments"
+            ],
+            var_name="Flow",
+            value_name="Shipments"
+        )
+        stacked_df["Flow"] = stacked_df["Flow"].replace({
+            "Inbound_Shipments": "Inbound",
+            "Outbound_Shipments": "Outbound"
+        })
+        st.subheader("Inbound vs Outbound Monthly Flow 📦")
+
+        fig = px.bar(
+            stacked_df,
+            x="Month",
+            y="Shipments",
+            color="Flow",
+            barmode="stack",
+            text="Shipments",
+            color_discrete_map={
+                "Inbound": "#1f77b4",
+                "Outbound": "#ff7f0e"
+            }
+        )
+
+        fig.update_layout(
+            paper_bgcolor='rgba(255,255,255,1)',
+            plot_bgcolor='rgba(0,0,0,0.05)',
+            xaxis_title="Month",
+            yaxis_title="Shipments",
+            hovermode="x unified",
+            margin=dict(t=40, b=40, l=40, r=40),
+            legend_title=""
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+    
+  
+  
+   
+   
+    st.subheader("Global Operational Presence 🌍")
+
+    
+
+        # ==========================================================
+        # MINIMAL LEGEND
+        # ==========================================================
+
+    st.markdown("""
+        <div style="
+        display:flex;
+        gap:18px;
+        align-items:center;
+        font-size:13px;
+        margin-bottom:10px;
+        color:#555;
+        flex-wrap:wrap;
+        ">
+
+        <div style="display:flex;align-items:center;gap:6px;">
+        <div style="
+        width:12px;
+        height:12px;
+        background:#1f77b4;
+        border-radius:2px;
+        "></div>
+        <span>Inbound</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;">
+        <div style="
+        width:12px;
+        height:12px;
+        background:#ff7f0e;
+        border-radius:2px;
+        "></div>
+        <span>Outbound</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;">
+        <div style="
+        width:12px;
+        height:12px;
+        background:#9467bd;
+        border-radius:2px;
+        "></div>
+        <span>Both</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;">
+        <div style="
+        width:12px;
+        height:12px;
+        background:#d3d3d3;
+        border-radius:2px;
+        border:1px solid #c0c0c0;
+        "></div>
+        <span>No Activity</span>
+        </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+
+        # ==========================================================
+        # CLEAN INBOUND COUNTRIES
+        # ==========================================================
+
+    inbound_countries = (
+            inbound_df["Country"]
+            .dropna()
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .unique()
+        )
+
+        # ==========================================================
+        # CLEAN OUTBOUND COUNTRIES
+        # ==========================================================
+
+    outbound_countries = (
+            outbound_df["Destination Country"]
+            .dropna()
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .unique()
+        )
+
+        # ==========================================================
+        # BUILD COUNTRY STATUS
+        # ==========================================================
+
+    all_operational_countries = set(inbound_countries).union(
+            set(outbound_countries)
+        )
+
+    country_status = []
+
+    for country in all_operational_countries:
+
+            in_inbound = country in inbound_countries
+            in_outbound = country in outbound_countries
+
+            if in_inbound and in_outbound:
+                status = "BOTH"
+
+            elif in_inbound:
+                status = "INBOUND"
+
+            elif in_outbound:
+                status = "OUTBOUND"
+
+            else:
+                status = "NONE"
+
+            country_status.append({
+                "Country": country,
+                "Status": status
+            })
+
+    country_status_df = pd.DataFrame(country_status)
+
+        # ==========================================================
+        # COLOR MAPPING
+        # ==========================================================
+
+    color_map = {
+            "INBOUND": "#1f77b4",
+            "OUTBOUND": "#ff7f0e",
+            "BOTH": "#9467bd",
+            "NONE": "#d3d3d3"
+        }
+
+        # ==========================================================
+        # CREATE FIGURE
+        # ==========================================================
+
+    fig = go.Figure()
+
+        # ==========================================================
+        # ADD CHOROPLETH LAYERS
+        # ==========================================================
+
+    for status, color in color_map.items():
+
+            temp_df = country_status_df[
+                country_status_df["Status"] == status
+            ]
+
+            if temp_df.empty:
+                continue
+
+            fig.add_trace(go.Choropleth(
+
+                locations=temp_df["Country"],
+
+                locationmode="country names",
+
+                z=[1] * len(temp_df),
+
+                name=status,
+
+                hovertemplate=
+                    "<b>%{location}</b><br>" +
+                    f"Status: {status}<extra></extra>",
+
+                showscale=False,
+
+                colorscale=[
+                    [0, color],
+                    [1, color]
+                ],
+
+                marker_line_color="white",
+                marker_line_width=0.5
+            ))
+
+        # ==========================================================
+        # 📍 COSCO PIRAEUS MARKER ONLY
+        # ==========================================================
+
+    fig.add_trace(go.Scattergeo(
+
+            lon=[23.638263063003365],
+
+            lat=[37.93672505227739],
+
+            text=["COSCO Greece - Piraeus"],
+
+            mode="markers+text",
+
+            textposition="top center",
+
+            marker=dict(
+                size=12,
+                color="red",
+                line=dict(
+                    width=1,
+                    color="black"
+                )
+            ),
+
+            name="COSCO Piraeus",
+
+            hovertemplate=
+                "<b>%{text}</b><extra></extra>"
+        ))
+
+        # ==========================================================
+        # LAYOUT
+        # ==========================================================
+
+    fig.update_layout(
+
+            geo=dict(
+
+                showframe=False,
+
+                showcoastlines=True,
+
+                coastlinecolor="LightGray",
+
+                projection_type="natural earth",
+
+                bgcolor="rgba(0,0,0,0)",
+
+                showland=True,
+    
+                landcolor="#efefef",
+                projection_scale=1.2 
+            ),
+
+            paper_bgcolor='rgba(255,255,255,1)',
+
+            plot_bgcolor='rgba(0,0,0,0)',
+
+            height=600,
+            
+            margin=dict(
+                t=40,
+                b=20,
+                l=20,
+                r=20
+            ),
+
+            showlegend=False
+        )
+
+        # ==========================================================
+        # DISPLAY MAP
+        # ==========================================================
+
+    st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
+    
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Total CBM Distribution 📦")
+
+        cbm_df = pd.DataFrame({
+            "Type": ["Inbound", "Outbound"],
+            "Value": [inbound_cbm, outbound_cbm]
+        })
+
+        fig_cbm = px.pie(
+            cbm_df,
+            names="Type",
+            values="Value",
+            hole=0.3,
+            color="Type",
+            color_discrete_map={
+                "Inbound": "#2ca02c",
+                "Outbound": "#d62728"
+            }
+        )
+
+        fig_cbm.update_traces(
+            textinfo="percent+label"
+        )
+
+        fig_cbm.update_layout(
+            annotations=[
+                dict(
+                    text=f"{total_cbm:,.1f}<br>CBM",
+                    x=0.5,
+                    y=0.5,
+                    font_size=18,
+                    showarrow=False
+                )
+            ],
+            paper_bgcolor='rgba(255,255,255,1)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(t=40, b=20, l=20, r=20)
+        )
+
+        st.plotly_chart(fig_cbm, use_container_width=True)
+    with col2:
+        st.subheader("Monthly CBM Comparison 📐")
+
+        st.plotly_chart(
+            comparison_chart(
+                overview_monthly,
+                "Inbound_CBM",
+                "Outbound_CBM",
+                "Inbound vs Outbound CBM",
+                "CBM",
+                "#2ca02c",   # green
+                "#d62728"    # light green
+            ),
+            use_container_width=True
+        )
+     
+    
+def build_monthly(df, date_col, label):
+
+
+    temp = df.copy()
+
+    # same logic your dashboards already use
+    temp[date_col] = pd.to_datetime(
+        temp[date_col],
+        errors="coerce"
+    )
+
+    temp = temp.dropna(subset=[date_col])
+    temp["Containers"] = temp["Container Size/type"].notna().astype(int)
+    # remove future dates
+    today = pd.Timestamp.today().normalize()
+
+    temp = temp[
+        temp[date_col] <= today
+    ]
+
+    # create month
+    temp["Month"] = (
+        temp[date_col]
+        .dt.to_period("M")
+        .astype(str)
+    )
+
+    # aggregate
+    monthly = (
+        temp.groupby("Month")
+        .agg({
+            "CBM": "sum",
+            "Pallets": "sum",
+            "Boxes": "sum",
+            "Containers": "sum"
+        })
+        .reset_index()
+    )
+
+    monthly[f"{label}_Shipments"] = (
+        temp.groupby("Month")
+        .size()
+        .values
+    )
+
+    # rename metrics
+    monthly = monthly.rename(columns={
+        "CBM": f"{label}_CBM",
+        "Pallets": f"{label}_Pallets",
+        "Boxes": f"{label}_Boxes",
+        "Containers": f"{label}_Containers"
+    })
+
+    return monthly 
+def comparison_chart(
+    df,
+    inbound_col,
+    outbound_col,
+    title,
+    y_title,
+    inbound_color,
+    outbound_color
+):
+
+    fig = go.Figure()
+
+    # Inbound
+    fig.add_trace(go.Bar(
+        x=df["Month"],
+        y=df[inbound_col],
+        name="Inbound",
+        marker_color=inbound_color
+    ))
+
+    # Outbound
+    fig.add_trace(go.Bar(
+        x=df["Month"],
+        y=df[outbound_col],
+        name="Outbound",
+        marker_color=outbound_color
+    )) 
+
+    fig.update_layout(
+        title=title,
+        barmode="group",
+        xaxis_title="Month",
+        yaxis_title=y_title,
+        paper_bgcolor='rgba(255,255,255,1)',
+        plot_bgcolor='rgba(0,0,0,0.05)',
+        margin=dict(t=40, b=40, l=40, r=40),
+        hovermode="x unified",
+        legend=dict(
+            title=""
+        )
+    )
+
+    return fig
 
 # ==============================
 # MAIN APP FLOW
@@ -1282,7 +2598,7 @@ inbound_df, outbound_df = load_data(folder_path)
 st.sidebar.header("Data Selection 📊")
 data_choice = st.sidebar.radio(
     "Display: ",
-    ["Inbound ◀️", "Outbound ▶️"]
+    ["Overview 📊","Inbound ◀️", "Outbound ▶️"]
 )
 
 # Apply filters based on selection
@@ -1299,7 +2615,13 @@ elif data_choice == "Outbound ▶️":
     else:
         filtered = apply_filters(outbound_df)
         show_outbound_dashboard(filtered)
-
+elif data_choice == "Overview 📊":
+    if inbound_df.empty and outbound_df.empty:
+        st.warning("No data available for overview.")
+    else:
+        show_overview_dashboard(
+            inbound_df,
+            outbound_df)
 st.sidebar.markdown(
     "<p style='font-size:12px;color:gray'>Use the filters above to refine the dataset. "
     "The dashboard updates automatically based on your selection.</p>",
