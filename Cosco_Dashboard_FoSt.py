@@ -1535,7 +1535,7 @@ div[data-testid="stMetricValue"] {
             y=selected_metric,
             text=selected_metric,
             color=selected_metric,
-            color_continuous_scale="agsunset"
+            color_continuous_scale="aggrnyl"
         )
 
         bar_fig.update_layout(
