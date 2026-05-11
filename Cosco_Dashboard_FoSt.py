@@ -2486,7 +2486,7 @@ div[data-testid="stMetricValue"] {
     with col2:
         st.subheader("Monthly CBM Comparison 📐")
 
-            st.plotly_chart(
+        st.plotly_chart(
                 comparison_chart(
                     overview_monthly,
                     "Inbound_CBM",
