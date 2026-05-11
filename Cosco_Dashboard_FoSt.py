@@ -2458,8 +2458,8 @@ div[data-testid="stMetricValue"] {
             hole=0.3,
             color="Type",
             color_discrete_map={
-                "Inbound": "#2ca02c",
-                "Outbound": "#d62728"
+                 "Inbound": "#1f77b4",
+                "Outbound": "#ff7f0e"
             }
         )
 
@@ -2493,8 +2493,8 @@ div[data-testid="stMetricValue"] {
                 "Outbound_CBM",
                 "Inbound vs Outbound CBM",
                 "CBM",
-                "#2ca02c",   # green
-                "#d62728"    # light green
+                 "Inbound": "#1f77b4",
+                "Outbound": "#ff7f0e"
             ),
             use_container_width=True
         )
