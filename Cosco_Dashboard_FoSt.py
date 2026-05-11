@@ -2492,7 +2492,7 @@ div[data-testid="stMetricValue"] {
                     "Inbound_CBM",
                     "Outbound_CBM",
                     "Inbound vs Outbound CBM",
-                    "CBM",
+                    "CBM"
                    
                 ),
                 use_container_width=True
