@@ -2493,10 +2493,9 @@ div[data-testid="stMetricValue"] {
                 "Outbound_CBM",
                 "Inbound vs Outbound CBM",
                 "CBM",
-                 color_discrete_map={
+            color_discrete_map={
                 "Inbound": "#1f77b4",
                 "Outbound": "#ff7f0e"
-            }
             ),
             use_container_width=True
         )
