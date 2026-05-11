@@ -642,35 +642,22 @@ div[data-testid="stMetricValue"] {
     # 🚢 VENDOR ANALYSIS
     # ==============================  
         if 'Vendor' in df.columns:
+
             st.subheader("Vendor Shipment Distribution ⛓️🔎")
-            
-            # Count shipments per vendor
+
             vendor_counts = df['Vendor'].value_counts().reset_index()
             vendor_counts.columns = ['Vendor', 'Count']
-            
-            
-            # Plot bar chart with different colors for each vendor
-            fig = px.bar(
-                vendor_counts,
-                x='Vendor',
-                y='Count',
-                color='Vendor',  # assign different color per vendor
-                text='Count',    # show count on top of bars
-                color_discrete_sequence=px.colors.qualitative.Pastel  # optional color palette
+
+            render_chart_toggle(
+                data=vendor_counts,
+                chart_type="vendor",
+                x_col="Vendor",
+                y_col="Count",
+                color_col="Vendor",
+                title="Vendor Shipment Distribution",
+                colors=px.colors.qualitative.Pastel,
+                key_prefix="vendor"
             )
-            
-            # Make background transparent
-            fig.update_layout(
-                paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0,0,0,0.05)',
-                xaxis_title='Vendor',
-                yaxis_title='Number of Shipments',
-                margin=dict(t=40, b=40, l=40, r=40),
-                legend=dict(
-                title=dict(text=""))
-            )
-            
-            st.plotly_chart(fig, width="stretch")
     with ch2:
     
     # ==============================
@@ -678,9 +665,9 @@ div[data-testid="stMetricValue"] {
     # ==============================
         
         if 'Goods Type' in df.columns:
+
             st.subheader("Goods Type Breakdown ⚠️🔎")
 
-            # Map codes to full names
             goods_map = {
                 "GC": "GENERAL",
                 "DG": "DANGEROUS"
@@ -688,96 +675,59 @@ div[data-testid="stMetricValue"] {
 
             df['Goods Type'] = df['Goods Type'].replace(goods_map)
 
-            # Count occurrences
             goods_counts = df['Goods Type'].value_counts().reset_index()
             goods_counts.columns = ['Goods Type', 'Count']
 
-            # Plot bar chart
-            fig = px.bar(
-                goods_counts,
-                x='Goods Type',
-                y='Count',
-                color='Goods Type',
-                text='Count',
-                color_discrete_sequence=px.colors.qualitative.Safe
+            render_chart_toggle(
+                data=goods_counts,
+                chart_type="goods",
+                x_col="Goods Type",
+                y_col="Count",
+                color_col="Goods Type",
+                title="Goods Type Breakdown",
+                colors=px.colors.qualitative.Safe,
+                key_prefix="goods"
             )
-
-            fig.update_layout(
-                paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                xaxis_title='Goods Type',
-                yaxis_title='Number of Projects',
-                margin=dict(t=40, b=40, l=40, r=40),
-                legend=dict(
-                title=dict(text=""))
-            )
-
-            st.plotly_chart(fig, width="stretch")
     # ==============================
     # 🌍 COUNTRY OF ORIGIN
     # ============================== 
     cl1, cl2 = st.columns(2)
     with cl1:
         if 'Country' in df.columns:
+
             st.subheader("Country of Origin Distribution 🌍🔎")
-            
-            # Count projects per country
+
             country_counts = df['Country'].value_counts().reset_index()
             country_counts.columns = ['Country', 'Count']
-            
-            # Plot bar chart with different colors
-            fig = px.bar(
-                country_counts,
-                x='Country',
-                y='Count',
-                color='Country',               # different color per country
-                text='Count',                  # show count on top
-                color_discrete_sequence=px.colors.qualitative.Vivid_r
+
+            render_chart_toggle(
+                data=country_counts,
+                chart_type="country",
+                x_col="Country",
+                y_col="Count",
+                color_col="Country",
+                title="Country Distribution",
+                colors=px.colors.qualitative.Vivid_r,
+                key_prefix="country"
             )
-            
-            # Transparent background
-            fig.update_layout(
-                paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                xaxis_title='Country',
-                yaxis_title='Number of Projects',
-                margin=dict(t=40, b=40, l=40, r=40),
-                legend=dict(
-                title=dict(text=""))
-            )
-            
-            st.plotly_chart(fig, width="stretch")
     with cl2:
         if 'FDC' in df.columns:
+
             st.subheader("Total Shipments per DC 🏬🔎")
-            
-            # Count shipments per FDC
+
             fdc_counts = df['FDC'].value_counts().reset_index()
             fdc_counts.columns = ['FDC', 'Shipments']
-            
-            # Plot bar chart
-            fig = px.bar(
-                fdc_counts,
-                x='FDC',
-                y='Shipments',
-                color='FDC',                   # different color per FDC
-                text='Shipments',               # show count on top of bars
-                color_discrete_sequence=px.colors.qualitative.Pastel
+
+            render_chart_toggle(
+                data=fdc_counts,
+                chart_type="fdc",
+                x_col="FDC",
+                y_col="Shipments",
+                color_col="FDC",
+                title="DC Distribution",
+                colors=px.colors.qualitative.Pastel,
+                key_prefix="fdc"
             )
-            
-            # Make background transparent
-            fig.update_layout(
-                paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                xaxis_title='DC',
-                yaxis_title='Total Shipments',
-                margin=dict(t=40, b=40, l=40, r=40),
-                legend=dict(
-                title=dict(text=""))
-                
-            )
-            fig.update_xaxes(showticklabels=False)
-            st.plotly_chart(fig, width="stretch")
     # ==============================
     # 🚢 TOP VESSELS (INBOUND)
     # ==============================
@@ -797,15 +747,14 @@ div[data-testid="stMetricValue"] {
         vessel_counts = vessel_series.value_counts().reset_index()
         vessel_counts.columns = ['Vessel', 'Shipments']
 
-        # Toggle view
         view_mode = st.radio(
             "View as:",
-            ["Chart", "Table"],
+            ["Bar Chart", "Pie Chart", "Table"],
             horizontal=True,
             key="inbound_vessel_toggle"
         )
 
-        if view_mode == "Chart":
+        if view_mode == "Bar Chart":
 
             fig = px.bar(
                 vessel_counts.head(10),
@@ -814,20 +763,40 @@ div[data-testid="stMetricValue"] {
                 orientation='h',
                 text='Shipments',
                 color='Shipments',
-                color_continuous_scale= px.colors.qualitative.Vivid_r
+                color_continuous_scale='Viridis'
             )
 
             fig.update_layout(
                 yaxis=dict(categoryorder='total ascending'),
                 margin=dict(t=40, b=40, l=40, r=40),
-                paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0, 0, 0,0.05)',
+                paper_bgcolor='rgba(255,255,255,1)',
+                plot_bgcolor='rgba(0,0,0,0.05)',
                 coloraxis_showscale=False
             )
 
-            
+            st.plotly_chart(fig, use_container_width=True)
+
+        elif view_mode == "Pie Chart":
+
+            fig = px.pie(
+                vessel_counts.head(10),
+                names='Vessel',
+                values='Shipments',
+                hole=0.4
+            )
+
+            fig.update_traces(
+                textposition='inside',
+                textinfo='percent+label'
+            )
+
+            fig.update_layout(
+                paper_bgcolor='rgba(255,255,255,1)'
+            )
 
             st.plotly_chart(fig, use_container_width=True)
+
+
 
         else:
         # ------------------------------
@@ -893,33 +862,22 @@ div[data-testid="stMetricValue"] {
             st.plotly_chart(fig, use_container_width=True)
 
         if 'CUSTOMS FORMALITIES' in df.columns:
+
             st.subheader("Custom Formalities Breakdown 📑🔎")
 
-            # Count values for the column
             customs_counts = df['CUSTOMS FORMALITIES'].value_counts().reset_index()
             customs_counts.columns = ['Formality', 'Count']
 
-            # Create a Plotly bar chart
-            fig = px.bar(
-                customs_counts,
-                x='Formality',
-                y='Count',
-                color='Count',
-                text='Count',  # shows value on top of bars
-                color_continuous_scale='Viridis',  # nice gradient
-                labels={'Formality':'Custom Formality', 'Count':''},
-                
+            render_chart_toggle(
+                data=customs_counts,
+                chart_type="customs",
+                x_col="Formality",
+                y_col="Count",
+                color_col="Formality",
+                title="Custom Formalities",
+                colors=px.colors.qualitative.Bold,
+                key_prefix="customs"
             )
-
-            fig.update_traces(textposition='outside')  # place text above bars
-            fig.update_layout(height=500, xaxis_tickangle=-45,
-                              legend=dict(
-                title=dict(text="")),
-                paper_bgcolor='rgba(255, 255, 255, 1)',
-                plot_bgcolor='rgba(0,0,0,0.05)',
-                ) 
-
-            st.plotly_chart(fig, use_container_width=True)
 
 
 
@@ -927,78 +885,45 @@ div[data-testid="stMetricValue"] {
     # ------------------------------
     # Pie chart for the percentages
     # ------------------------------    
-    with tg1:
-        if 'Description' in df.columns:
-    
+    with tg1: 
+       if 'Description' in df.columns:
+
             st.subheader("Top Goods 🏆🔎")
-    
-            # Count occurrences
+
             goods_counts = df['Description'].value_counts().reset_index()
             goods_counts.columns = ['Description', 'Count']
-    
-            # Goods Bar Chart
-            fig = px.bar(
-                goods_counts,
-                x='Description',
-                y='Count',
-                text='Count',
-                color='Description',
-                width=700,
-                height=500
+
+            render_chart_toggle(
+                data=goods_counts.head(10),
+                chart_type="topgoods",
+                x_col="Description",
+                y_col="Count",
+                color_col="Description",
+                title="Top Goods",
+                colors=px.colors.qualitative.Set3,
+                key_prefix="topgoods"
             )
-    
-            fig.update_traces(
-                textposition='outside'
-            )
-    
-            fig.update_layout(
-                paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0,0,0,0.05)',
-                margin=dict(t=0, b=0, l=0, r=0),
-                showlegend=False,
-                
-            )
-    
-            st.plotly_chart(fig, use_container_width=False)
-    
-    
     with tg2:
-    
         # ==============================
-        # 📁 PROJECT SHIPPING MODE
+        # 📁 PROJECT ALLOCATION
         # ==============================
         if 'PROJECT' in df.columns and 'Shipping MODE' in df.columns:
-    
+
             st.subheader("Project Shipping Mode 📦🔎")
-    
-            # Count shipping modes
+
             shipping_counts = df['Shipping MODE'].value_counts().reset_index()
             shipping_counts.columns = ['Shipping MODE', 'Count']
-    
-            # Shipping Mode Bar Chart
-            fig = px.bar(
-                shipping_counts,
-                x='Shipping MODE',
-                y='Count',
-                text='Count',
-                color='Shipping MODE',
-                width=700,
-                height=500,
-                color_discrete_sequence=px.colors.qualitative.Safe
+
+            render_chart_toggle(
+                data=shipping_counts,
+                chart_type="shipping",
+                x_col="Shipping MODE",
+                y_col="Count",
+                color_col="Shipping MODE",
+                title="Shipping Mode",
+                colors=px.colors.qualitative.Safe,
+                key_prefix="shipping"
             )
-    
-            fig.update_traces(
-                textposition='outside'
-            )
-    
-            fig.update_layout(
-                paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                margin=dict(t=0, b=0, l=0, r=0),
-                showlegend=False
-            )
-    
-            st.plotly_chart(fig,use_container_width=False)
 # ==============================
 # ==============================    
 # ==============================
