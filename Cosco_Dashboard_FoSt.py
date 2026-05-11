@@ -2486,17 +2486,17 @@ div[data-testid="stMetricValue"] {
     with col2:
         st.subheader("Monthly CBM Comparison 📐")
 
-        st.plotly_chart(
-            comparison_chart(
-                overview_monthly,
-                "Inbound_CBM",
-                "Outbound_CBM",
-                "Inbound vs Outbound CBM",
-                "CBM",
-               
-            ),
-            use_container_width=True
-        )
+            st.plotly_chart(
+                comparison_chart(
+                    overview_monthly,
+                    "Inbound_CBM",
+                    "Outbound_CBM",
+                    "Inbound vs Outbound CBM",
+                    "CBM",
+                   
+                ),
+                use_container_width=True
+            )
      
     
 def build_monthly(df, date_col, label):
