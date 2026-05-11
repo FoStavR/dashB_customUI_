@@ -62,7 +62,61 @@ st.sidebar.image(logo, width='stretch')
 # ============================== 
 # FILTER FUNCTION (SMART VERSION + DATE SAFE)
 # ============================== 
+def render_chart_toggle(data, chart_type, x_col, y_col, color_col=None,
+                        title="", orientation="v",
+                        colors=None, key_prefix="chart"):
 
+    view_mode = st.radio(
+        f"{title} View:",
+        ["Bar Chart", "Pie Chart"],
+        horizontal=True,
+        key=f"{key_prefix}_toggle"
+    )
+
+    if view_mode == "Bar Chart":
+
+        fig = px.bar(
+            data,
+            x=x_col if orientation == "v" else y_col,
+            y=y_col if orientation == "v" else x_col,
+            orientation=orientation,
+            color=color_col,
+            text=y_col,
+            color_discrete_sequence=colors,
+            color_continuous_scale="Viridis"
+        )
+
+        fig.update_layout(
+            paper_bgcolor='rgba(255,255,255,1)',
+            plot_bgcolor='rgba(0,0,0,0.05)',
+            margin=dict(t=40, b=40, l=40, r=40),
+            legend=dict(title=dict(text=""))
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    else:
+
+        fig = px.pie(
+            data,
+            names=x_col,
+            values=y_col,
+            color_discrete_sequence=colors,
+            hole=0.3
+        )
+
+        fig.update_traces(
+            textposition='inside',
+            textinfo='percent+label'
+        )
+
+        fig.update_layout(
+            paper_bgcolor='rgba(255,255,255,1)',
+            margin=dict(t=40, b=40, l=40, r=40),
+            legend=dict(title=dict(text=""))
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
 def apply_filters(df):
 
     st.sidebar.header("Filters ≡")
