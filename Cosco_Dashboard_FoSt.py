@@ -1097,7 +1097,7 @@ div[data-testid="stMetricValue"] {
 
             # Display metric
             st.metric("Unique Regions", unique_regions)
-        elif 'Region' in 
+       
 
     col3.metric(
         "Total Vendors",
