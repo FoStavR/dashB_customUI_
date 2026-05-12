@@ -1527,7 +1527,7 @@ div[data-testid="stMetricValue"] {
             y=selected_metric,
             text=selected_metric,
             color=selected_metric,
-            color_continuous_scale="aggrnyl"
+            color_continuous_scale="agsunset"
         )
 
         bar_fig.update_layout(
@@ -1566,29 +1566,16 @@ div[data-testid="stMetricValue"] {
             desc_counts.columns = ['Description', 'Shipments']
 
 
-            fig = px.bar(
-                        desc_counts,
-                        x="Description", 
-                        y="Shipments",
-                        orientation="v",
-                        text="Shipments",
-                        color="Description",
-                        color_discrete_sequence=px.colors.qualitative.Pastel
-                    )
-
-            fig.update_layout(
-                        yaxis=dict(categoryorder="total ascending"),
-                        margin=dict(t=40, b=40, l=40, r=40),
-                        plot_bgcolor="rgba(0,0,0,0.05)",
-                        paper_bgcolor="rgba(255,255,255,1)",
-                        coloraxis_showscale=False,
-                        legend=dict(
-                    title=dict(text=""))
-                    )
-
-            
-
-            st.plotly_chart(fig, use_container_width=True)
+            render_chart_toggle(
+                data=desc_counts,
+                chart_type="descriptions",
+                x_col="Description",
+                y_col="Shipments",
+                color_col="Description",
+                title="Top Descriptions",
+                colors=px.colors.qualitative.Pastel,
+                key_prefix="outbound_descriptions"
+            )
     with mpc2:
             # ===============================
             # 🌍 Top Destination Countries
@@ -1616,29 +1603,17 @@ div[data-testid="stMetricValue"] {
 
             country_counts.columns = ['Country', 'Shipments']
 
-            fig = px.bar(
-                country_counts,
-                y='Country',
-                x='Shipments',
-                orientation='h',
-                text='Shipments',
-                color='Country',
-                color_discrete_sequence=px.colors.qualitative.Pastel
+            render_chart_toggle(
+                data=country_counts,
+                chart_type="destination_countries",
+                x_col="Country",
+                y_col="Shipments",
+                color_col="Country",
+                title="Top Destination Countries",
+                colors=px.colors.qualitative.Pastel,
+                orientation="h",
+                key_prefix="outbound_destinations"
             )
-
-            fig.update_layout(
-                paper_bgcolor='rgba(255, 255, 255, 1)',
-               plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                yaxis=dict(categoryorder='total ascending'),
-                margin=dict(t=30, b=30, l=30, r=30),
-                showlegend=True,legend=dict(
-                    title=dict(text="")),
-                legend_bgcolor='rgba(0,0,0,0)'
-            )
-
-            
-
-            st.plotly_chart(fig, use_container_width=True)
 
 
 
@@ -1676,27 +1651,16 @@ div[data-testid="stMetricValue"] {
                 )
                 region_counts.columns = ['Region', 'Shipments']
 
-                fig = px.bar(
-                        region_counts,
-                        x='Region',
-                        y='Shipments',
-                        text='Shipments',
-                        color='Region',
-                        color_discrete_sequence=px.colors.qualitative.Pastel
-                    )
-
-                fig.update_layout(
-                        paper_bgcolor='rgba(255,255,255,1)',
-                        plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                        xaxis=dict(tickangle=-45),  # tilt labels
-                        margin=dict(t=40, b=40, l=40, r=40),
-                        legend=dict(
-                    title=dict(text="")),legend_bgcolor='rgba(0,0,0,0)'
-                    )
-                fig.update_xaxes(showticklabels=False)
-                
-
-                st.plotly_chart(fig, use_container_width=True)
+                render_chart_toggle(
+                    data=region_counts,
+                    chart_type="greek_regions",
+                    x_col="Region",
+                    y_col="Shipments",
+                    color_col="Region",
+                    title="Top Greek Regions",
+                    colors=px.colors.qualitative.Pastel,
+                    key_prefix="outbound_regions"
+                )
 
                 
 
@@ -1721,7 +1685,16 @@ div[data-testid="stMetricValue"] {
 
            
 
-            fig = px.bar(
+            vessel_view = st.radio(
+                "Vessel View:",
+                ["Bar Chart", "Pie Chart"],
+                horizontal=True,
+                key="outbound_vessel_toggle"
+            )
+
+            if vessel_view == "Bar Chart":
+
+                fig = px.bar(
                     vessel_counts.head(10),
                     y='Vessel',
                     x='Shipments',
@@ -1731,18 +1704,35 @@ div[data-testid="stMetricValue"] {
                     color_continuous_scale='oryel'
                 )
 
-            fig.update_layout(
+                fig.update_layout(
                     yaxis=dict(categoryorder='total ascending'),
                     margin=dict(t=30, b=30, l=30, r=30),
-                    paper_bgcolor='rgba(255,255,255,1)', 
-                    plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                    coloraxis_showscale=False,
-                    legend_bgcolor='rgba(0,0,0,0)'
+                    paper_bgcolor='rgba(255,255,255,1)',
+                    plot_bgcolor='rgba(0,0,0,0.1)',
+                    coloraxis_showscale=False
                 )
 
-            
+                st.plotly_chart(fig, use_container_width=True)
 
-            st.plotly_chart(fig, use_container_width=True)
+            else:
+
+                fig = px.pie(
+                    vessel_counts.head(10),
+                    names='Vessel',
+                    values='Shipments',
+                    hole=0.3
+                )
+
+                fig.update_traces(
+                    textinfo='percent'
+                )
+
+                fig.update_layout(
+                    paper_bgcolor='rgba(255,255,255,1)',
+                    margin=dict(t=30, b=30, l=30, r=30)
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
 
             
        
@@ -1758,26 +1748,16 @@ div[data-testid="stMetricValue"] {
             customs_counts = df['CUSTOMS FORMALITIES'].value_counts().reset_index()
             customs_counts.columns = ['Formality', 'Count']
 
-            fig = px.bar(
-                customs_counts,
-                x='Formality',
-                y='Count',
-                text='Count',
-                color='Count',
-                color_continuous_scale='Viridis'
+            render_chart_toggle(
+                data=customs_counts,
+                chart_type="customs",
+                x_col="Formality",
+                y_col="Count",
+                color_col="Formality",
+                title="Custom Formalities",
+                colors=px.colors.qualitative.Bold,
+                key_prefix="outbound_customs"
             )
-
-            fig.update_layout(
-                margin=dict(t=30, b=30, l=30, r=30),
-                paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                xaxis_title="",
-                yaxis_title="",legend_bgcolor='rgba(0,0,0,0)'
-            )
-
-           
-
-            st.plotly_chart(fig, use_container_width=True)
     with col1:
         # ==============================
         # 📦 CONTAINER SIZE
@@ -1793,28 +1773,16 @@ div[data-testid="stMetricValue"] {
                 "Count": [count_20.sum(), count_40.sum()]
             })
  
-            fig = px.bar(
-                container_counts,
-                x='Size',
-                y='Count',
-                text='Count',
-                color='Size'
+            render_chart_toggle(
+                data=container_counts,
+                chart_type="container_size",
+                x_col="Size",
+                y_col="Count",
+                color_col="Size",
+                title="Container Size",
+                colors=px.colors.qualitative.Safe,
+                key_prefix="outbound_container"
             )
-
-            fig.update_layout(
-                margin=dict(t=30, b=30, l=30, r=30),
-                paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                xaxis_title="",
-                yaxis_title="",
-                legend=dict(
-                title=dict(text="")),
-                legend_bgcolor='rgba(0,0,0,0)',
-            )
-
-            
-
-            st.plotly_chart(fig, use_container_width=True)
     with col2:
         # ==============================
         # 📦 GOODS TYPE
@@ -1825,29 +1793,16 @@ div[data-testid="stMetricValue"] {
             goods_counts = df['Goods Type'].value_counts().reset_index()
             goods_counts.columns = ['Goods Type', 'Count']
 
-            fig = px.bar(
-                goods_counts,
-                x='Goods Type',
-                y='Count',
-                text='Count',
-                color='Goods Type',
-                color_discrete_sequence=px.colors.qualitative.Safe
+            render_chart_toggle(
+                data=goods_counts,
+                chart_type="goods_type",
+                x_col="Goods Type",
+                y_col="Count",
+                color_col="Goods Type",
+                title="Goods Type",
+                colors=px.colors.qualitative.Safe,
+                key_prefix="outbound_goods"
             )
-
-            fig.update_layout(
-                margin=dict(t=30, b=30, l=30, r=30),
-                paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0,0,0,0.1)',
-                xaxis_title="",
-                yaxis_title="",
-                legend=dict(
-                title=dict(text="")),
-                legend_bgcolor='rgba(0,0,0,0)'
-            )
-
-            fig.update_traces(textposition='outside')
-
-            st.plotly_chart(fig, use_container_width=True)
     with col2:
         # ==============================
         # 🚚 SHIPPING MODE
@@ -1866,30 +1821,16 @@ div[data-testid="stMetricValue"] {
             shipping_counts = shipping_mode.value_counts().reset_index()
             shipping_counts.columns = ['Mode', 'Count']
 
-            fig = px.bar(
-                shipping_counts,
-                x='Mode',
-                y='Count',
-                text='Count',
-                color='Mode',
-                color_discrete_sequence=px.colors.qualitative.Pastel
+            render_chart_toggle(
+                data=shipping_counts,
+                chart_type="shipping_mode",
+                x_col="Mode",
+                y_col="Count",
+                color_col="Mode",
+                title="Shipping Mode",
+                colors=px.colors.qualitative.Pastel,
+                key_prefix="outbound_shipping"
             )
-
-            fig.update_layout(
-                margin=dict(t=30, b=30, l=30, r=30),
-                paper_bgcolor='rgba(255,255,255,1)',
-                plot_bgcolor='rgba(0, 0, 0, 0.05)',
-                xaxis_title="",
-                yaxis_title="",
-                legend=dict(
-                title=dict(text="")),
-                legend_bgcolor='rgba(0,0,0,0)',
-                
-            )
-
-            
-
-            st.plotly_chart(fig, use_container_width=True)
 # ==============================
 # ==============================    
 # ==============================
