@@ -1887,7 +1887,7 @@ def apply_overview_project_filter(inbound_df, outbound_df):
         filtered_outbound_df
     """
 
-    st.subheader("Shared Projects Filter 📦🔄")
+    st.subheader("Shared Projects Filter")
 
     # ==========================================================
     # COPY DFS
