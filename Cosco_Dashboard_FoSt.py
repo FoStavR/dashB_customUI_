@@ -1870,8 +1870,119 @@ div[data-testid="stMetricValue"] {
             )
 # ==============================
 # ==============================    
+#PROJECT FILTER FOR OVERVIEW SECTION
 # ==============================
 # ==============================
+def apply_overview_project_filter(inbound_df, outbound_df):
+
+    """
+    Filters BOTH inbound + outbound dataframes
+    using ONLY projects existing in BOTH files.
+
+    Also supports project alias grouping
+    (ex: INFOQUEST -> XIAOMI).
+
+    Returns:
+        filtered_inbound_df,
+        filtered_outbound_df
+    """
+
+    st.subheader("Shared Projects Filter 📦🔄")
+
+    # ==========================================================
+    # COPY DFS
+    # ==========================================================
+    inbound_df = inbound_df.copy()
+    outbound_df = outbound_df.copy()
+
+    # ==========================================================
+    # CLEAN COLUMN NAMES
+    # ==========================================================
+    inbound_df.columns = inbound_df.columns.str.strip()
+    outbound_df.columns = outbound_df.columns.str.strip()
+
+    # ==========================================================
+    # PROJECT ALIAS MAP
+    # ==========================================================
+    project_alias_map = {
+        "INFOQUEST TECHNOLOGIES AEBE": "XIAOMI H.K. LIMITED"
+    }
+
+    # ==========================================================
+    # SAFE PROJECT CLEANER
+    # ==========================================================
+    def clean_project_series(series):
+
+        return (
+            series
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .str.replace(r"\s+", " ", regex=True)
+        )
+
+    # ==========================================================
+    # CREATE PROJECT_GROUP
+    # ==========================================================
+    if "PROJECT" in inbound_df.columns:
+
+        inbound_df["PROJECT_GROUP"] = (
+            clean_project_series(inbound_df["PROJECT"])
+            .replace(project_alias_map)
+        )
+
+    if "PROJECT" in outbound_df.columns:
+
+        outbound_df["PROJECT_GROUP"] = (
+            clean_project_series(outbound_df["PROJECT"])
+            .replace(project_alias_map)
+        )
+
+    # ==========================================================
+    # BUILD COMMON PROJECTS
+    # ==========================================================
+    inbound_projects = set(
+        inbound_df["PROJECT_GROUP"]
+        .dropna()
+        .unique()
+    )
+
+    outbound_projects = set(
+        outbound_df["PROJECT_GROUP"]
+        .dropna()
+        .unique()
+    )
+
+    common_projects = sorted(
+        inbound_projects.intersection(outbound_projects)
+    )
+
+    # ==========================================================
+    # FILTER UI
+    # ==========================================================
+    selected_projects = st.multiselect(
+        "Select Shared Projects",
+        options=common_projects,
+        default=[]
+    )
+
+    # ==========================================================
+    # APPLY FILTERS
+    # ==========================================================
+    if selected_projects:
+
+        inbound_df = inbound_df[
+            inbound_df["PROJECT_GROUP"]
+            .isin(selected_projects)
+        ]
+
+        outbound_df = outbound_df[
+            outbound_df["PROJECT_GROUP"]
+            .isin(selected_projects)
+        ]
+
+    return inbound_df, outbound_df
 # ==============================
 # ==============================
 # OVERVIEW DASHBOARD
@@ -1885,7 +1996,10 @@ def show_overview_dashboard(inbound_df, outbound_df):
     # -----------------------------------
     inbound_df.columns = inbound_df.columns.str.strip()
     outbound_df.columns = outbound_df.columns.str.strip()
-
+    inbound_df, outbound_df = apply_overview_project_filter(
+        inbound_df,
+        outbound_df
+    )
     # -----------------------------------
     # Safe numeric conversion
     # -----------------------------------
