@@ -260,7 +260,9 @@ def apply_filters(df):
             "key": "filter_description"
         }
     ]
-
+    project_expansion_map = {
+    "XIAOMI H.K. LIMITED": ["XIAOMI H.K. LIMITED", "INFOQUEST TECHNOLOGIES AEBE"]
+    }
     # ==========================================================
     # READ CURRENT SELECTIONS
     # ==========================================================
@@ -341,11 +343,32 @@ def apply_filters(df):
 
         selected_values = current_selections[column]
 
-        filtered_df = apply_single_filter(
-            filtered_df,
-            column,
-            selected_values
-        )
+        if column == "PROJECT" and selected_values:
+
+            expanded_values = []
+
+            for val in selected_values:
+
+                if val in project_expansion_map:
+                    expanded_values.extend(project_expansion_map[val])
+                else:
+                    expanded_values.append(val)
+
+            expanded_values = list(set(expanded_values))
+
+            filtered_df = apply_single_filter(
+                filtered_df,
+                column,
+                expanded_values
+            )
+
+        else:
+            filtered_df = apply_single_filter(
+                filtered_df,
+                column,
+                selected_values
+            )
+
 
     return filtered_df
 # ==============================
@@ -1001,7 +1024,21 @@ def show_outbound_dashboard(df):
     for col in numeric_cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-
+    project_mapping = {
+    "INFOQUEST TECHNOLOGIES AEBE": "XIAOMI H.K. LIMITED"
+    }
+    
+    df["PROJECT"] = (
+        df["PROJECT"]
+        .astype(str)
+        .str.strip()
+    )
+    
+    df["PROJECT_GROUP"] = (
+        df["PROJECT"]
+        .map(project_mapping)
+        .fillna(df["PROJECT"])
+    )
     # ==============================
     # 🔹 OUTBOUND CORE KPIs
     # ==============================
@@ -1060,7 +1097,7 @@ div[data-testid="stMetricValue"] {
 
             # Display metric
             st.metric("Unique Regions", unique_regions)
-            
+        elif 'Region' in 
 
     col3.metric(
         "Total Vendors",
