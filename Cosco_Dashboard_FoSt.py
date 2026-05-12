@@ -1996,7 +1996,10 @@ def show_overview_dashboard(inbound_df, outbound_df):
     # -----------------------------------
     inbound_df.columns = inbound_df.columns.str.strip()
     outbound_df.columns = outbound_df.columns.str.strip()
-    
+    inbound_df, outbound_df = apply_overview_project_filter(
+        inbound_df,
+        outbound_df
+    )
     # -----------------------------------
     # Safe numeric conversion
     # -----------------------------------
@@ -2152,10 +2155,7 @@ div[data-testid="stMetricValue"] {
         "Flow Balance Ratio ⚖️","Total Inbound / Outbound Shipments",
         f"{flow_balance_ratio:,.2f}"
     )
-    inbound_df, outbound_df = apply_overview_project_filter(
-        inbound_df,
-        outbound_df
-    )
+    
     g1, g2 = st.columns(2)
 
     with g1:
