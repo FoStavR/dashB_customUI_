@@ -2708,8 +2708,7 @@ elif data_choice == "Overview 📊":
             outbound_df,
         )
     )
-        show_overview_dashboard(
-        overview_inbound_df,
+        show_overview_dashboard(overview_inbound_df,
         overview_outbound_df,
         stock_df
 )
