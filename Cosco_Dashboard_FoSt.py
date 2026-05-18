@@ -2016,7 +2016,7 @@ def show_overview_dashboard(inbound_df, outbound_df):
         'Sku Qty.'
     ]
 
-        if col in stock_df.columns:
+    if col in stock_df.columns:
                 stock_df[col] = pd.to_numeric(
                     stock_df[col],
                     errors='coerce'
@@ -2025,21 +2025,21 @@ def show_overview_dashboard(inbound_df, outbound_df):
         # =====================================
         # KPI CALCULATIONS
         # =====================================
-        inbound_shipments = len(inbound_df)
-        outbound_shipments = len(outbound_df)
+    inbound_shipments = len(inbound_df)
+    outbound_shipments = len(outbound_df)
     
-        total_shipments = (
+    total_shipments = (
             inbound_shipments +
             outbound_shipments
         )
     
-        inbound_cbm = inbound_df['CBM'].sum()
-        outbound_cbm = outbound_df['CBM'].sum()
+    inbound_cbm = inbound_df['CBM'].sum()
+    outbound_cbm = outbound_df['CBM'].sum()
     
-        total_cbm = inbound_cbm + outbound_cbm
+    total_cbm = inbound_cbm + outbound_cbm
     
-        inbound_pallets = inbound_df['Pallets'].sum()
-        outbound_pallets = outbound_df['Pallets'].sum()
+    inbound_pallets = inbound_df['Pallets'].sum()
+    outbound_pallets = outbound_df['Pallets'].sum()
 
     
  # ==============================
