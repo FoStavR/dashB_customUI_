@@ -499,7 +499,7 @@ def apply_filters(df):
 # ==============================
 # INBOUND DASHBOARD
 # ==============================
-def show_inbound_dashboard(df,stock_df):
+def show_inbound_dashboard(df):
 
     st.header("Inbound Dashboard 🪟")
 
@@ -2702,7 +2702,7 @@ if data_choice == "Inbound ◀️":
         st.warning("No Inbound data available.")
     else:
         filtered = apply_filters(inbound_df)
-        show_inbound_dashboard(filtered,stock_df)
+        show_inbound_dashboard(filtered)
 
 elif data_choice == "Outbound ▶️":
     if outbound_df.empty:
