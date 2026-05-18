@@ -188,7 +188,6 @@ def render_chart_toggle(data, chart_type, x_col, y_col, color_col=None,
     )
 
     if view_mode == "Bar Chart":
-
         fig = px.bar(
             data,
             x=x_col if orientation == "v" else y_col,
