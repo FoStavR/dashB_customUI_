@@ -2015,9 +2015,9 @@ div[data-testid="stMetricValue"] {
     if outbound_shipments != 0 else 0
 )
    
-    stock_pallets = stock_df['Pallets'].sum()
-    stock_boxes = stock_df['Boxes'].sum()
-    stock_reels = stock_df['REELS'].sum()
+    stock_pallets = int(stock_df['Pallets'].sum())
+    stock_boxes = int(stock_df['Boxes'].sum())
+    stock_reels = int(stock_df['REELS'].sum())
     
     st.subheader("Operational Overview KPIs 🚀")
     col1, col2, col3,col4 = st.columns(4) 
