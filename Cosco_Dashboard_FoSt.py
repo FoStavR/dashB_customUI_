@@ -2033,7 +2033,7 @@ div[data-testid="stMetricValue"] {
     col5.metric("2025 Stock Pallets",f"{stock_pallets:,}")
     col6.metric("2025 Stock Boxes",f"{stock_boxes:,}")
     col7.metric("2025 Stock Reels",f"{stock_reels:,}")
-    col8.metric("2025 Stock CBM","Entering 2026", f"{stock_df['CBM'].sum():,.2f}" ) 
+    col8.metric("Entering 2026","2025 Stock CBM", f"{stock_df['CBM'].sum():,.2f}" ) 
     
     k1, k2, k3,k4 = st.columns(4)
     k1.metric("Current Inventory CBM",f"{inventory_cbm:,.2f}" )
