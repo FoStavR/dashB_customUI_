@@ -282,37 +282,49 @@ def apply_filters(df):
     filtered_df = df.copy()
 
     # ==========================================================
-    # 📅 DATE FILTER (UNCHANGED)
+    # 📅 DATE FILTER
     # ==========================================================
     date_column = None
-
-    if "W\H/PORT Outbound date" in df.columns:
-        date_column = "W\H/PORT Outbound date"
-
+    
+    if "W\\H/PORT Outbound date" in df.columns:
+        date_column = "W\\H/PORT Outbound date"
+    
     elif "WH Inbound date" in df.columns:
         date_column = "WH Inbound date"
-
+    
     if date_column:
-
+    
         filtered_df[date_column] = pd.to_datetime(
             filtered_df[date_column],
             dayfirst=True,
             errors="coerce"
         )
-
+    
         today = pd.Timestamp.today().normalize()
-
+    
+        # ==========================================
+        # HARD MINIMUM DATE FOR INBOUND
+        # ==========================================
+        if date_column == "WH Inbound date":
+    
+            minimum_allowed_date = pd.Timestamp("2026-01-01")
+    
+            filtered_df = filtered_df[
+                filtered_df[date_column] >= minimum_allowed_date
+            ]
+    
+        # Remove future dates
         filtered_df = filtered_df[
             filtered_df[date_column] <= today
         ]
-
+    
         valid_dates = filtered_df[date_column].dropna()
-
+    
         if not valid_dates.empty:
-
+    
             min_date = valid_dates.min()
             max_date = valid_dates.max()
-
+    
             selected_dates = st.sidebar.date_input(
                 "Date Range 📅",
                 value=(min_date, max_date),
@@ -320,12 +332,12 @@ def apply_filters(df):
                 max_value=max_date,
                 key="filter_date"
             )
-
+    
             if selected_dates and len(selected_dates) == 2:
-
+    
                 start_date = pd.to_datetime(selected_dates[0])
                 end_date = pd.to_datetime(selected_dates[1])
-
+    
                 filtered_df = filtered_df[
                     (filtered_df[date_column].isna()) |
                     (
@@ -333,7 +345,6 @@ def apply_filters(df):
                         (filtered_df[date_column] <= end_date)
                     )
                 ]
-
     # ==========================================================
     # FILTER CONFIGURATION
     # ==========================================================
@@ -914,7 +925,7 @@ div[data-testid="stMetricValue"] {
                 chart_type="fdc",
                 x_col="FDC",
                 y_col="Shipments",
-                color_col="FDC",
+                color_col="DC",
                 title="DC Distribution",
                 colors=px.colors.qualitative.Pastel,
                 key_prefix="fdc"
@@ -2139,9 +2150,9 @@ div[data-testid="stMetricValue"] {
         f"{int(peak_value)} shipments that month"
     )
     col5, col6, col7,col8 = st.columns(4) 
-    col5.metric("2025 Stock Pallets",f"{stock_pallets:,}")
-    col6.metric("2025 Stock Boxes",f"{stock_boxes:,}")
-    col7.metric("2025 Stock Reels",f"{stock_reels:,}")
+    col5.metric("2025 Total Stock Pallets",f"{stock_pallets:,}")
+    col6.metric("2025 Total Stock Boxes",f"{stock_boxes:,}")
+    col7.metric("2025 Total Stock Reels",f"{stock_reels:,}")
     col8.metric("Entering 2026","2025 Stock CBM", f"{stock_df['CBM'].sum():,.2f}" ) 
     
     k1, k2, k3,k4 = st.columns(4)
