@@ -916,16 +916,16 @@ div[data-testid="stMetricValue"] {
         if 'FDC' in df.columns:
 
             st.subheader("Total Shipments per DC 🏬🔎")
-
+        
             fdc_counts = df['FDC'].value_counts().reset_index()
-            fdc_counts.columns = ['FDC', 'Shipments']
-
+            fdc_counts.columns = ['DC', 'Shipments']
+        
             render_chart_toggle(
                 data=fdc_counts,
                 chart_type="fdc",
-                x_col="FDC",
+                x_col="DC",
                 y_col="Shipments",
-                color_col="FDC",
+                color_col="DC",
                 title="DC Distribution",
                 colors=px.colors.qualitative.Pastel,
                 key_prefix="fdc"
