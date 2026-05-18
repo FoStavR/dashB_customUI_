@@ -2021,14 +2021,14 @@ div[data-testid="stMetricValue"] {
     col2.metric( "Inbound Shipments", f"{inbound_shipments:,}" ) 
     col3.metric( "Outbound Shipments", f"{outbound_shipments:,}" ) 
     col4, col5, col6 = st.columns(3) 
-    col4.metric( "Inventory CBM", f"{inventory_cbm:,.2f}" ) 
+    col4.metric("2025 Stock CBM", f"{stock_df['CBM'].sum():,.2f}" ) 
     col5.metric( "Inbound CBM", f"{inbound_cbm:,.2f}" ) 
     col6.metric( "Outbound CBM", f"{outbound_cbm:,.2f}" )
     k1, k2, k3 = st.columns(3)
     
     k1.metric(
-    "2025 Stock CBM",
-    f"{stock_df['CBM'].sum():,.2f}",
+    "Inventory CBM",
+        f"{inventory_cbm:,.2f}",
     )
 
     k2.metric(
