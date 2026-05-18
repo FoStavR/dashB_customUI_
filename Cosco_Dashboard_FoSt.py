@@ -2036,9 +2036,9 @@ div[data-testid="stMetricValue"] {
     col8.metric("Current Inventory CBM",f"{inventory_cbm:,.2f}")
     
     k1, k2, k3,k4 = st.columns(4)
-    k1.metric("2025 Stock Pallets",f"{stock_pallets:}")
-    k2.metric("2025 Stock Boxes",f"{stock_boxes:}")
-    k3.metric("2025 Stock Reels",f"{stock_reels:}")
+    k1.metric("2025 Stock Pallets",f"{stock_pallets:,}")
+    k2.metric("2025 Stock Boxes",f"{stock_boxes:,}")
+    k3.metric("2025 Stock Reels",f"{stock_reels:,}")
     k4.metric(
         "Avg Monthly Flow","Total CBM / Month",
         f"{avg_monthly_flow:,.1f} CBM"
