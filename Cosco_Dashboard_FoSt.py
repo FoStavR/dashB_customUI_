@@ -2016,11 +2016,11 @@ def show_overview_dashboard(inbound_df, outbound_df):
         'Sku Qty.'
     ]
 
-    if col in stock_df.columns:
-            stock_df[col] = pd.to_numeric(
-                stock_df[col],
-                errors='coerce'
-            ).fillna(0)
+        if col in stock_df.columns:
+                stock_df[col] = pd.to_numeric(
+                    stock_df[col],
+                    errors='coerce'
+                ).fillna(0)
     
         # =====================================
         # KPI CALCULATIONS
