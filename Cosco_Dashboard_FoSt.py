@@ -2711,7 +2711,7 @@ elif data_choice == "Overview 📊":
         show_overview_dashboard(
     overview_inbound_df,
     overview_outbound_df,
-    overview_stock_df
+    stock_df
 )
 st.sidebar.markdown(
     "<p style='font-size:12px;color:gray'>Use the filters above to refine the dataset. "
