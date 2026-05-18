@@ -2561,8 +2561,7 @@ def comparison_chart(
     return fig
 def apply_overview_date_filter(
     inbound_df,
-    outbound_df,
-    stock_df
+    outbound_df
 ):
 
     # -----------------------------------
@@ -2570,14 +2569,14 @@ def apply_overview_date_filter(
     # -----------------------------------
     inbound_df = inbound_df.copy()
     outbound_df = outbound_df.copy()
-    stock_df = stock_df.copy()
+   
 
     # -----------------------------------
     # Date columns
     # -----------------------------------
     inbound_date_col = "WH Inbound date"
     outbound_date_col = "W\\H/PORT Outbound date"
-    stock_date_col = "Date"
+   
 
     # -----------------------------------
     # Convert dates safely
@@ -2596,13 +2595,7 @@ def apply_overview_date_filter(
             dayfirst=True
         )
 
-    if stock_date_col in stock_df.columns:
-        stock_df[stock_date_col] = pd.to_datetime(
-            stock_df[stock_date_col],
-            errors="coerce",
-            dayfirst=True
-        )
-
+ 
     # -----------------------------------
     # Collect all dates
     # -----------------------------------
@@ -2616,9 +2609,7 @@ def apply_overview_date_filter(
         if outbound_date_col in outbound_df.columns
         else pd.Series(dtype='datetime64[ns]'),
 
-        stock_df[stock_date_col].dropna()
-        if stock_date_col in stock_df.columns
-        else pd.Series(dtype='datetime64[ns]')
+        
 
     ])
 
@@ -2626,7 +2617,7 @@ def apply_overview_date_filter(
     # Safety
     # -----------------------------------
     if all_dates.empty:
-        return inbound_df, outbound_df, stock_df
+        return inbound_df, outbound_df
 
     # -----------------------------------
     # Min/max dates
@@ -2674,16 +2665,9 @@ def apply_overview_date_filter(
                 )
             ]
 
-        # Stock
-        if stock_date_col in stock_df.columns:
-            stock_df = stock_df[
-                stock_df[stock_date_col].between(
-                    start_date,
-                    end_date
-                )
-            ]
+        
 
-    return inbound_df, outbound_df, stock_df
+    return inbound_df, outbound_df
 # ==============================
 # MAIN APP FLOW
 # ==============================
