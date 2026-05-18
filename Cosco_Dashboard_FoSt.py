@@ -2559,115 +2559,7 @@ def comparison_chart(
     )
 
     return fig
-def apply_overview_date_filter(
-    inbound_df,
-    outbound_df
-):
 
-    # -----------------------------------
-    # Copy DFs
-    # -----------------------------------
-    inbound_df = inbound_df.copy()
-    outbound_df = outbound_df.copy()
-   
-
-    # -----------------------------------
-    # Date columns
-    # -----------------------------------
-    inbound_date_col = "WH Inbound date"
-    outbound_date_col = "W\\H/PORT Outbound date"
-   
-
-    # -----------------------------------
-    # Convert dates safely
-    # -----------------------------------
-    if inbound_date_col in inbound_df.columns:
-        inbound_df[inbound_date_col] = pd.to_datetime(
-            inbound_df[inbound_date_col],
-            errors="coerce",
-            dayfirst=True
-        )
-
-    if outbound_date_col in outbound_df.columns:
-        outbound_df[outbound_date_col] = pd.to_datetime(
-            outbound_df[outbound_date_col],
-            errors="coerce",
-            dayfirst=True
-        )
-
- 
-    # -----------------------------------
-    # Collect all dates
-    # -----------------------------------
-    all_dates = pd.concat([
-
-        inbound_df[inbound_date_col].dropna()
-        if inbound_date_col in inbound_df.columns
-        else pd.Series(dtype='datetime64[ns]'),
-
-        outbound_df[outbound_date_col].dropna()
-        if outbound_date_col in outbound_df.columns
-        else pd.Series(dtype='datetime64[ns]'),
-
-        
-
-    ])
-
-    # -----------------------------------
-    # Safety
-    # -----------------------------------
-    if all_dates.empty:
-        return inbound_df, outbound_df
-
-    # -----------------------------------
-    # Min/max dates
-    # -----------------------------------
-    min_date = all_dates.min()
-    max_date = all_dates.max()
-
-    # -----------------------------------
-    # Sidebar filter
-    # -----------------------------------
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Overview Date Filter 📅")
-
-    selected_dates = st.sidebar.date_input(
-        "Overview Date Range",
-        value=(min_date, max_date),
-        min_value=min_date,
-        max_value=max_date,
-        key="overview_date_filter"
-    )
-
-    # -----------------------------------
-    # Apply filtering
-    # -----------------------------------
-    if selected_dates and len(selected_dates) == 2:
-
-        start_date = pd.to_datetime(selected_dates[0])
-        end_date = pd.to_datetime(selected_dates[1])
-
-        # Inbound
-        if inbound_date_col in inbound_df.columns:
-            inbound_df = inbound_df[
-                inbound_df[inbound_date_col].between(
-                    start_date,
-                    end_date
-                )
-            ]
-
-        # Outbound
-        if outbound_date_col in outbound_df.columns:
-            outbound_df = outbound_df[
-                outbound_df[outbound_date_col].between(
-                    start_date,
-                    end_date
-                )
-            ]
-
-        
-
-    return inbound_df, outbound_df
 # ==============================
 # MAIN APP FLOW
 # ==============================
@@ -2702,14 +2594,9 @@ elif data_choice == "Overview 📊":
     if inbound_df.empty and outbound_df.empty:
         st.warning("No data available for overview.")
     else:
-        overview_inbound_df, overview_outbound_df = (
-        apply_overview_date_filter(
-            inbound_df,
-            outbound_df,
-        )
-    )
-        show_overview_dashboard(overview_inbound_df,
-        overview_outbound_df,
+        
+        show_overview_dashboard(inbound_df,
+        outbound_df,
         stock_df
 )
 st.sidebar.markdown(
