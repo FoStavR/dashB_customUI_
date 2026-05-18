@@ -33,20 +33,14 @@ def apply_overview_date_filter(
     outbound_df
 ):
 
-    # -----------------------------------
-    # Copy DFs
-    # -----------------------------------
     inbound_df = inbound_df.copy()
     outbound_df = outbound_df.copy()
 
-    # -----------------------------------
-    # Date columns
-    # -----------------------------------
     inbound_date_col = "WH Inbound date"
     outbound_date_col = "W\\H/PORT Outbound date"
 
     # -----------------------------------
-    # Safe datetime conversion
+    # SAFE DATETIME CONVERSION
     # -----------------------------------
     if inbound_date_col in inbound_df.columns:
 
@@ -54,7 +48,7 @@ def apply_overview_date_filter(
             inbound_df[inbound_date_col],
             errors="coerce",
             dayfirst=True
-        )
+        ).dt.normalize()
 
     if outbound_date_col in outbound_df.columns:
 
@@ -62,42 +56,54 @@ def apply_overview_date_filter(
             outbound_df[outbound_date_col],
             errors="coerce",
             dayfirst=True
-        )
+        ).dt.normalize()
 
     # -----------------------------------
-    # Collect dates
+    # REMOVE INVALIDS
     # -----------------------------------
     inbound_dates = (
-        inbound_df[inbound_date_col].dropna()
+        inbound_df[inbound_date_col]
+        .dropna()
         if inbound_date_col in inbound_df.columns
-        else pd.Series(dtype='datetime64[ns]')
+        else pd.Series(dtype="datetime64[ns]")
     )
 
     outbound_dates = (
-        outbound_df[outbound_date_col].dropna()
+        outbound_df[outbound_date_col]
+        .dropna()
         if outbound_date_col in outbound_df.columns
-        else pd.Series(dtype='datetime64[ns]')
+        else pd.Series(dtype="datetime64[ns]")
     )
 
+    # -----------------------------------
+    # COMBINE ALL DATES
+    # -----------------------------------
     all_dates = pd.concat([
         inbound_dates,
         outbound_dates
     ])
 
     # -----------------------------------
-    # Safety
+    # SAFETY
     # -----------------------------------
     if all_dates.empty:
+
+        st.warning("No valid dates found.")
         return inbound_df, outbound_df
 
     # -----------------------------------
-    # Global min/max
+    # TRUE MIN / MAX
     # -----------------------------------
-    global_min_date = all_dates.min().date()
-    global_max_date = all_dates.max().date()
+    global_min_date = all_dates.min()
+    global_max_date = all_dates.max()
 
     # -----------------------------------
-    # Overview-only sidebar filter
+    # DEBUG (optional)
+    # -----------------------------------
+    # st.write(global_min_date, global_max_date)
+
+    # -----------------------------------
+    # SIDEBAR FILTER
     # -----------------------------------
     st.sidebar.markdown("---")
     st.sidebar.subheader("Overview Date Filter 📅")
@@ -105,23 +111,23 @@ def apply_overview_date_filter(
     selected_dates = st.sidebar.date_input(
         "Overview Date Range",
         value=(
-            global_min_date,
-            global_max_date
+            global_min_date.date(),
+            global_max_date.date()
         ),
-        min_value=global_min_date,
-        max_value=global_max_date,
+        min_value=global_min_date.date(),
+        max_value=global_max_date.date(),
         key="overview_page_date_filter"
     )
 
     # -----------------------------------
-    # Apply filtering
+    # APPLY FILTER
     # -----------------------------------
     if selected_dates and len(selected_dates) == 2:
 
         start_date = pd.to_datetime(selected_dates[0])
         end_date = pd.to_datetime(selected_dates[1])
 
-        # Inbound filter
+        # Inbound
         if inbound_date_col in inbound_df.columns:
 
             inbound_df = inbound_df[
@@ -131,7 +137,7 @@ def apply_overview_date_filter(
                 )
             ]
 
-        # Outbound filter
+        # Outbound
         if outbound_date_col in outbound_df.columns:
 
             outbound_df = outbound_df[
