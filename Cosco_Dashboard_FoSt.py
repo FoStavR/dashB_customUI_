@@ -176,9 +176,17 @@ st.sidebar.image(logo, width='stretch')
 # ============================== 
 # FILTER FUNCTION (SMART VERSION + DATE SAFE)
 # ============================== 
-def render_chart_toggle(data, chart_type, x_col, y_col, color_col=None,
-                        title="", orientation="v",
-                        colors=None, key_prefix="chart"):
+def render_chart_toggle(
+    data,
+    chart_type,
+    x_col,
+    y_col,
+    color_col=None,
+    title="",
+    orientation="v",
+    colors=None,
+    key_prefix="chart"
+):
 
     view_mode = st.radio(
         f"{title} View:",
@@ -187,6 +195,9 @@ def render_chart_toggle(data, chart_type, x_col, y_col, color_col=None,
         key=f"{key_prefix}_toggle"
     )
 
+    # =========================================
+    # BAR CHART
+    # =========================================
     if view_mode == "Bar Chart":
 
         fig = px.bar(
@@ -196,41 +207,23 @@ def render_chart_toggle(data, chart_type, x_col, y_col, color_col=None,
             orientation=orientation,
             color=color_col,
             text=y_col,
-            color_discrete_sequence=colors,
-            color_continuous_scale="Viridis"
+            color_discrete_sequence=colors
         )
 
         fig.update_layout(
             paper_bgcolor='rgba(255,255,255,1)',
             plot_bgcolor='rgba(0,0,0,0.05)',
             margin=dict(t=40, b=40, l=40, r=40),
-            legend=dict(title=dict(text=""))
+            legend=dict(
+                title=dict(text="")
+            )
         )
 
-        st.plotly_chart(fig, use_container_width=True)
-
-    else:
-
-        fig = px.pie(
-            data,
-            names=x_col,
-            values=y_col,
-            color_discrete_sequence=colors,
-            hole=0.3
+        st.plotly_chart(
+            fig,
+            use_container_width=True
         )
 
-        fig.update_traces(
-            textposition='inside',
-            textinfo='percent+label'
-        )
-
-        fig.update_layout(
-            paper_bgcolor='rgba(255,255,255,1)',
-            margin=dict(t=40, b=40, l=40, r=40),
-            legend=dict(title=dict(text=""))
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
     # =========================================
     # PIE CHART
     # =========================================
