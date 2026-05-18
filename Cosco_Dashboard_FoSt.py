@@ -923,7 +923,7 @@ div[data-testid="stMetricValue"] {
             render_chart_toggle(
                 data=fdc_counts,
                 chart_type="fdc",
-                x_col="FDC",
+                x_col="DC",
                 y_col="Shipments",
                 color_col="DC",
                 title="DC Distribution",
