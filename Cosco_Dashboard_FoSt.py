@@ -2148,6 +2148,7 @@ div[data-testid="stMetricValue"] {
     f"{stock_df['CBM'].sum():,.2f}",
     "CBM in stock"
     )
+    st.caption("CBM in stock")
 
     k2.metric(
         "Avg Monthly Flow","Total CBM / Month",
