@@ -176,9 +176,17 @@ st.sidebar.image(logo, width='stretch')
 # ============================== 
 # FILTER FUNCTION (SMART VERSION + DATE SAFE)
 # ============================== 
-def render_chart_toggle(data, chart_type, x_col, y_col, color_col=None,
-                        title="", orientation="v",
-                        colors=None, key_prefix="chart"):
+def render_chart_toggle(
+    data,
+    chart_type,
+    x_col,
+    y_col,
+    color_col=None,
+    title="",
+    orientation="v",
+    colors=None,
+    key_prefix="chart"
+):
 
     view_mode = st.radio(
         f"{title} View:",
@@ -187,27 +195,64 @@ def render_chart_toggle(data, chart_type, x_col, y_col, color_col=None,
         key=f"{key_prefix}_toggle"
     )
 
+    # =========================================
+    # Detect numeric color column
+    # =========================================
+    use_continuous = False
+
+    if color_col is not None:
+
+        use_continuous = pd.api.types.is_numeric_dtype(
+            data[color_col]
+        )
+
+    # =========================================
+    # BAR CHART
+    # =========================================
     if view_mode == "Bar Chart":
-        fig = px.bar(
-            data,
+
+        bar_kwargs = dict(
+            data_frame=data,
             x=x_col if orientation == "v" else y_col,
             y=y_col if orientation == "v" else x_col,
             orientation=orientation,
             color=color_col,
-            text=y_col,
-            color_discrete_sequence=colors,
-            color_continuous_scale="Viridis"
+            text=y_col
         )
+
+        # -------------------------------------
+        # Numeric colors
+        # -------------------------------------
+        if use_continuous:
+
+            bar_kwargs["color_continuous_scale"] = "Viridis"
+
+        # -------------------------------------
+        # Categorical colors
+        # -------------------------------------
+        else:
+
+            bar_kwargs["color_discrete_sequence"] = colors
+
+        fig = px.bar(**bar_kwargs)
 
         fig.update_layout(
             paper_bgcolor='rgba(255,255,255,1)',
             plot_bgcolor='rgba(0,0,0,0.05)',
             margin=dict(t=40, b=40, l=40, r=40),
-            legend=dict(title=dict(text=""))
+            legend=dict(
+                title=dict(text="")
+            )
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
+    # =========================================
+    # PIE CHART
+    # =========================================
     else:
 
         fig = px.pie(
@@ -226,10 +271,15 @@ def render_chart_toggle(data, chart_type, x_col, y_col, color_col=None,
         fig.update_layout(
             paper_bgcolor='rgba(255,255,255,1)',
             margin=dict(t=40, b=40, l=40, r=40),
-            legend=dict(title=dict(text=""))
+            legend=dict(
+                title=dict(text="")
+            )
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 def apply_filters(df):
 
     st.sidebar.header("Filters ≡")
