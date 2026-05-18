@@ -2014,33 +2014,37 @@ div[data-testid="stMetricValue"] {
     inbound_shipments / outbound_shipments
     if outbound_shipments != 0 else 0
 )
+   
+    stock_pallets = stock_df['Pallets'].sum()
+    stock_boxes = stock_df['Boxes'].sum()
+    stock_reels = stock_df['REELS'].sum()
     
     st.subheader("Operational Overview KPIs 🚀")
-    col1, col2, col3 = st.columns(3) 
+    col1, col2, col3,col4 = st.columns(4) 
     col1.metric( "Total Shipments", f"{total_shipments:,}" ) 
     col2.metric( "Inbound Shipments", f"{inbound_shipments:,}" ) 
-    col3.metric( "Outbound Shipments", f"{outbound_shipments:,}" ) 
-    col4, col5, col6 = st.columns(3) 
-    col4.metric("2025 Stock CBM", f"{stock_df['CBM'].sum():,.2f}" ) 
-    col5.metric( "Inbound CBM", f"{inbound_cbm:,.2f}" ) 
-    col6.metric( "Outbound CBM", f"{outbound_cbm:,.2f}" )
-    k1, k2, k3 = st.columns(3)
-    
-    k1.metric(
-    "Inventory CBM",
-        f"{inventory_cbm:,.2f}",
-    )
-
-    k2.metric(
-        "Avg Monthly Flow","Total CBM / Month",
-        f"{avg_monthly_flow:,.1f} CBM"
-    )
-
-    k3.metric(
+    col3.metric( "Outbound Shipments", f"{outbound_shipments:,}" )
+    col4.metric(
         "Peak Operational Month",
         peak_month,
         f"{int(peak_value)} shipments that month"
     )
+    col5, col6, col7,col8 = st.columns(4) 
+    col5.metric("2025 Stock CBM", f"{stock_df['CBM'].sum():,.2f}" ) 
+    col6.metric( "Inbound CBM", f"{inbound_cbm:,.2f}" ) 
+    col7.metric( "Outbound CBM", f"{outbound_cbm:,.2f}" )
+    col8.metric("Inventory CBM",f"{inventory_cbm:,.2f}")
+    
+    k1, k2, k3,k4 = st.columns(3)
+    k1.metric("2025 Stock Pallets",f"{stock_pallets:,.2f}")
+    k2.metric("2025 Stock Boxes",f"{stock_boxes:,.2f}")
+    k3.metric("2025 Stock Reels",f"{stock_reels:,.2f}")
+    k4.metric(
+        "Avg Monthly Flow","Total CBM / Month",
+        f"{avg_monthly_flow:,.1f} CBM"
+    )
+
+    
     
     g1, g2 = st.columns(2)
 
