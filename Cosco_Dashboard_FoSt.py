@@ -38,7 +38,7 @@ def load_data(folder_path):
 
     inbound_list = []
     outbound_list = []
-
+    stock_list = []
     for file in excel_files:
         try:
             inbound_df = pd.read_excel(file, sheet_name='INBOUND')
@@ -51,11 +51,16 @@ def load_data(folder_path):
             outbound_list.append(outbound_df)
         except:
             pass
-
+        try:
+            stock_df = pd.read_excel(file, sheet_name='STOCK')
+            stock_list.append(stock_df)
+        except:
+            pass
     inbound_all = pd.concat(inbound_list, ignore_index=True) if inbound_list else pd.DataFrame()
     outbound_all = pd.concat(outbound_list, ignore_index=True) if outbound_list else pd.DataFrame()
+    stock_all = pd.concat(stock_list, ignore_index=True) if stock_list else pd.DataFrame()
 
-    return inbound_all, outbound_all
+    return inbound_all, outbound_all, stock_all
 
 
 st.sidebar.image(logo, width='stretch')
@@ -2011,38 +2016,30 @@ def show_overview_dashboard(inbound_df, outbound_df):
         'Sku Qty.'
     ]
 
-    for col in numeric_cols:
-
-        if col in inbound_df.columns:
-            inbound_df[col] = pd.to_numeric(
-                inbound_df[col],
+    if col in stock_df.columns:
+            stock_df[col] = pd.to_numeric(
+                stock_df[col],
                 errors='coerce'
             ).fillna(0)
-
-        if col in outbound_df.columns:
-            outbound_df[col] = pd.to_numeric(
-                outbound_df[col],
-                errors='coerce'
-            ).fillna(0)
-
-    # =====================================
-    # KPI CALCULATIONS
-    # =====================================
-    inbound_shipments = len(inbound_df)
-    outbound_shipments = len(outbound_df)
-
-    total_shipments = (
-        inbound_shipments +
-        outbound_shipments
-    )
-
-    inbound_cbm = inbound_df['CBM'].sum()
-    outbound_cbm = outbound_df['CBM'].sum()
-
-    total_cbm = inbound_cbm + outbound_cbm
-
-    inbound_pallets = inbound_df['Pallets'].sum()
-    outbound_pallets = outbound_df['Pallets'].sum()
+    
+        # =====================================
+        # KPI CALCULATIONS
+        # =====================================
+        inbound_shipments = len(inbound_df)
+        outbound_shipments = len(outbound_df)
+    
+        total_shipments = (
+            inbound_shipments +
+            outbound_shipments
+        )
+    
+        inbound_cbm = inbound_df['CBM'].sum()
+        outbound_cbm = outbound_df['CBM'].sum()
+    
+        total_cbm = inbound_cbm + outbound_cbm
+    
+        inbound_pallets = inbound_df['Pallets'].sum()
+        outbound_pallets = outbound_df['Pallets'].sum()
 
     
  # ==============================
@@ -2076,12 +2073,20 @@ div[data-testid="stMetricValue"] {
     # =====================================
     # EXECUTIVE KPI CARDS
     # =====================================
+    stock_cbm = stock_df['CBM'].sum()
+    
+    inventory_cbm = (
+        stock_cbm +
+        inbound_cbm -
+        outbound_cbm
+    )
+    
     inbound_monthly = build_monthly(
     inbound_df,
         "WH Inbound date",
         "Inbound"
     )
-
+   
     outbound_monthly = build_monthly(
         outbound_df,
         "W\\H/PORT Outbound date",
@@ -2135,11 +2140,11 @@ div[data-testid="stMetricValue"] {
     col2.metric( "Inbound Shipments", f"{inbound_shipments:,}" ) 
     col3.metric( "Outbound Shipments", f"{outbound_shipments:,}" ) 
     col4, col5, col6 = st.columns(3) 
-    col4.metric( "Total CBM", f"{total_cbm:,.2f}" ) 
+    col4.metric( "Inventory CBM", f"{inventory_cbm:,.2f}" ) 
     col5.metric( "Inbound CBM", f"{inbound_cbm:,.2f}" ) 
     col6.metric( "Outbound CBM", f"{outbound_cbm:,.2f}" )
     k1, k2, k3 = st.columns(3)
-
+    
     k1.metric(
         "Peak Operational Month",
         peak_month,
@@ -2675,7 +2680,7 @@ def comparison_chart(
 # ==============================
 
 folder_path = "Data/"  # Update this path to your folder containing Excel files
-inbound_df, outbound_df = load_data(folder_path)
+inbound_df, outbound_df, stock_df = load_data(folder_path)
 
 # -----------------------------
 # Select Data View in Sidebar
