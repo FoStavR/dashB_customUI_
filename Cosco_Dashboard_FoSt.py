@@ -2702,11 +2702,10 @@ elif data_choice == "Overview 📊":
     if inbound_df.empty and outbound_df.empty:
         st.warning("No data available for overview.")
     else:
-        overview_inbound_df, overview_outbound_df, overview_stock_df = (
+        overview_inbound_df, overview_outbound_df = (
         apply_overview_date_filter(
             inbound_df,
             outbound_df,
-            stock_df
         )
     )
         show_overview_dashboard(
