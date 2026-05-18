@@ -28,124 +28,114 @@ st.title("COSCO GREECE Logistics Dashboard 📈")
 # -------------------------------
 # Load stored coordinates CSV
 # -------------------------------
-def apply_overview_date_filter(
-    inbound_df,
-    outbound_df
-):
+def apply_overview_project_filter(inbound_df, outbound_df):
 
+    """
+    Filters BOTH inbound + outbound dataframes
+    using ONLY projects existing in BOTH files.
+
+    Also supports project alias grouping
+    (ex: INFOQUEST -> XIAOMI).
+
+    Returns:
+        filtered_inbound_df,
+        filtered_outbound_df
+    """
+
+    st.subheader("Shared Projects Filter 📦🔄")
+
+    # ==========================================================
+    # COPY DFS
+    # ==========================================================
     inbound_df = inbound_df.copy()
     outbound_df = outbound_df.copy()
 
-    inbound_date_col = "WH Inbound date"
-    outbound_date_col = "W\\H/PORT Outbound date"
+    # ==========================================================
+    # CLEAN COLUMN NAMES
+    # ==========================================================
+    inbound_df.columns = inbound_df.columns.str.strip()
+    outbound_df.columns = outbound_df.columns.str.strip()
 
-    # -----------------------------------
-    # SAFE DATETIME CONVERSION
-    # -----------------------------------
-    if inbound_date_col in inbound_df.columns:
+    # ==========================================================
+    # PROJECT ALIAS MAP
+    # ==========================================================
+    project_alias_map = {
+        "INFOQUEST TECHNOLOGIES AEBE": "XIAOMI H.K. LIMITED"
+    }
 
-        inbound_df[inbound_date_col] = pd.to_datetime(
-            inbound_df[inbound_date_col],
-            errors="coerce",
-            dayfirst=True
-        ).dt.normalize()
+    # ==========================================================
+    # SAFE PROJECT CLEANER
+    # ==========================================================
+    def clean_project_series(series):
 
-    if outbound_date_col in outbound_df.columns:
+        return (
+            series
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .str.replace(r"\s+", " ", regex=True)
+        )
 
-        outbound_df[outbound_date_col] = pd.to_datetime(
-            outbound_df[outbound_date_col],
-            errors="coerce",
-            dayfirst=True
-        ).dt.normalize()
+    # ==========================================================
+    # CREATE PROJECT_GROUP
+    # ==========================================================
+    if "PROJECT" in inbound_df.columns:
 
-    # -----------------------------------
-    # REMOVE INVALIDS
-    # -----------------------------------
-    inbound_dates = (
-        inbound_df[inbound_date_col]
+        inbound_df["PROJECT_GROUP"] = (
+            clean_project_series(inbound_df["PROJECT"])
+            .replace(project_alias_map)
+        )
+
+    if "PROJECT" in outbound_df.columns:
+
+        outbound_df["PROJECT_GROUP"] = (
+            clean_project_series(outbound_df["PROJECT"])
+            .replace(project_alias_map)
+        )
+
+    # ==========================================================
+    # BUILD COMMON PROJECTS
+    # ==========================================================
+    inbound_projects = set(
+        inbound_df["PROJECT_GROUP"]
         .dropna()
-        if inbound_date_col in inbound_df.columns
-        else pd.Series(dtype="datetime64[ns]")
+        .unique()
     )
 
-    outbound_dates = (
-        outbound_df[outbound_date_col]
+    outbound_projects = set(
+        outbound_df["PROJECT_GROUP"]
         .dropna()
-        if outbound_date_col in outbound_df.columns
-        else pd.Series(dtype="datetime64[ns]")
+        .unique()
     )
 
-    # -----------------------------------
-    # COMBINE ALL DATES
-    # -----------------------------------
-    all_dates = pd.concat([
-        inbound_dates,
-        outbound_dates
-    ])
-
-    # -----------------------------------
-    # SAFETY
-    # -----------------------------------
-    if all_dates.empty:
-
-        st.warning("No valid dates found.")
-        return inbound_df, outbound_df
-
-    # -----------------------------------
-    # TRUE MIN / MAX
-    # -----------------------------------
-    global_min_date = all_dates.min()
-    global_max_date = all_dates.max()
-
-    # -----------------------------------
-    # DEBUG (optional)
-    # -----------------------------------
-    # st.write(global_min_date, global_max_date)
-
-    # -----------------------------------
-    # SIDEBAR FILTER
-    # -----------------------------------
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Overview Date Filter 📅")
-
-    selected_dates = st.sidebar.date_input(
-        "Overview Date Range",
-        value=(
-            global_min_date.date(),
-            global_max_date.date()
-        ),
-        min_value=global_min_date.date(),
-        max_value=global_max_date.date(),
-        key="overview_page_date_filter"
+    common_projects = sorted(
+        inbound_projects.intersection(outbound_projects)
     )
 
-    # -----------------------------------
-    # APPLY FILTER
-    # -----------------------------------
-    if selected_dates and len(selected_dates) == 2:
+    # ==========================================================
+    # FILTER UI
+    # ==========================================================
+    selected_projects = st.multiselect(
+        "Select Shared Projects",
+        options=common_projects,
+        default=[]
+    )
 
-        start_date = pd.to_datetime(selected_dates[0])
-        end_date = pd.to_datetime(selected_dates[1])
+    # ==========================================================
+    # APPLY FILTERS
+    # ==========================================================
+    if selected_projects:
 
-        # Inbound
-        if inbound_date_col in inbound_df.columns:
+        inbound_df = inbound_df[
+            inbound_df["PROJECT_GROUP"]
+            .isin(selected_projects)
+        ]
 
-            inbound_df = inbound_df[
-                inbound_df[inbound_date_col].between(
-                    start_date,
-                    end_date
-                )
-            ]
-
-        # Outbound
-        if outbound_date_col in outbound_df.columns:
-
-            outbound_df = outbound_df[
-                outbound_df[outbound_date_col].between(
-                    start_date,
-                    end_date
-                )
-            ]
+        outbound_df = outbound_df[
+            outbound_df["PROJECT_GROUP"]
+            .isin(selected_projects)
+        ]
 
     return inbound_df, outbound_df
 def load_coordinates():
@@ -2715,7 +2705,7 @@ elif data_choice == "Overview 📊":
     else:
         
         overview_inbound_df, overview_outbound_df = (
-        apply_overview_date_filter(
+        apply_overview_project_filter(
             inbound_df,
             outbound_df
         )
