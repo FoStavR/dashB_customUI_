@@ -28,7 +28,120 @@ st.title("COSCO GREECE Logistics Dashboard 📈")
 # -------------------------------
 # Load stored coordinates CSV
 # -------------------------------
+def apply_overview_date_filter(
+    inbound_df,
+    outbound_df
+):
 
+    # -----------------------------------
+    # Copy DFs
+    # -----------------------------------
+    inbound_df = inbound_df.copy()
+    outbound_df = outbound_df.copy()
+
+    # -----------------------------------
+    # Date columns
+    # -----------------------------------
+    inbound_date_col = "WH Inbound date"
+    outbound_date_col = "W\\H/PORT Outbound date"
+
+    # -----------------------------------
+    # Safe datetime conversion
+    # -----------------------------------
+    if inbound_date_col in inbound_df.columns:
+
+        inbound_df[inbound_date_col] = pd.to_datetime(
+            inbound_df[inbound_date_col],
+            errors="coerce",
+            dayfirst=True
+        )
+
+    if outbound_date_col in outbound_df.columns:
+
+        outbound_df[outbound_date_col] = pd.to_datetime(
+            outbound_df[outbound_date_col],
+            errors="coerce",
+            dayfirst=True
+        )
+
+    # -----------------------------------
+    # Collect dates
+    # -----------------------------------
+    inbound_dates = (
+        inbound_df[inbound_date_col].dropna()
+        if inbound_date_col in inbound_df.columns
+        else pd.Series(dtype='datetime64[ns]')
+    )
+
+    outbound_dates = (
+        outbound_df[outbound_date_col].dropna()
+        if outbound_date_col in outbound_df.columns
+        else pd.Series(dtype='datetime64[ns]')
+    )
+
+    all_dates = pd.concat([
+        inbound_dates,
+        outbound_dates
+    ])
+
+    # -----------------------------------
+    # Safety
+    # -----------------------------------
+    if all_dates.empty:
+        return inbound_df, outbound_df
+
+    # -----------------------------------
+    # Global min/max
+    # -----------------------------------
+    global_min_date = all_dates.min().date()
+    global_max_date = all_dates.max().date()
+
+    # -----------------------------------
+    # Overview-only sidebar filter
+    # -----------------------------------
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Overview Date Filter 📅")
+
+    selected_dates = st.sidebar.date_input(
+        "Overview Date Range",
+        value=(
+            global_min_date,
+            global_max_date
+        ),
+        min_value=global_min_date,
+        max_value=global_max_date,
+        key="overview_page_date_filter"
+    )
+
+    # -----------------------------------
+    # Apply filtering
+    # -----------------------------------
+    if selected_dates and len(selected_dates) == 2:
+
+        start_date = pd.to_datetime(selected_dates[0])
+        end_date = pd.to_datetime(selected_dates[1])
+
+        # Inbound filter
+        if inbound_date_col in inbound_df.columns:
+
+            inbound_df = inbound_df[
+                inbound_df[inbound_date_col].between(
+                    start_date,
+                    end_date
+                )
+            ]
+
+        # Outbound filter
+        if outbound_date_col in outbound_df.columns:
+
+            outbound_df = outbound_df[
+                outbound_df[outbound_date_col].between(
+                    start_date,
+                    end_date
+                )
+            ]
+
+    return inbound_df, outbound_df
 def load_coordinates():
     return pd.read_csv(r"Data/region_coordinates.csv")  # Make sure CSV has lat, lon, city columns if needed
 coords_df = load_coordinates()
@@ -2595,9 +2708,18 @@ elif data_choice == "Overview 📊":
         st.warning("No data available for overview.")
     else:
         
-        show_overview_dashboard(inbound_df,
-        outbound_df,
-        stock_df
+        overview_inbound_df, overview_outbound_df = (
+        apply_overview_date_filter(
+            inbound_df,
+            outbound_df
+        )
+    )
+
+        show_overview_dashboard(
+            overview_inbound_df,
+            overview_outbound_df,
+            stock_df
+        )
 )
 st.sidebar.markdown(
     "<p style='font-size:12px;color:gray'>Use the filters above to refine the dataset. "
