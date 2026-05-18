@@ -1992,7 +1992,7 @@ def apply_overview_project_filter(inbound_df, outbound_df):
 # ==============================
 # OVERVIEW DASHBOARD
 # ==============================   
-def show_overview_dashboard(inbound_df, outbound_df):
+def show_overview_dashboard(inbound_df, outbound_df,stock_df):
 
     st.header("Overview Analysis Dashboard 📊")
 
