@@ -2002,10 +2002,7 @@ def show_overview_dashboard(inbound_df, outbound_df,stock_df):
     inbound_df.columns = inbound_df.columns.str.strip()
     outbound_df.columns = outbound_df.columns.str.strip()
     stock_df.columns=stock_df.columns.str.strip()
-    inbound_df, outbound_df = apply_overview_project_filter(
-        inbound_df,
-        outbound_df
-    )
+    
     
     # -----------------------------------
     # Safe numeric conversion
