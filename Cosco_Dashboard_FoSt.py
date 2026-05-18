@@ -379,7 +379,7 @@ def apply_filters(df):
 # ==============================
 # INBOUND DASHBOARD
 # ==============================
-def show_inbound_dashboard(df):
+def show_inbound_dashboard(df,stock_df):
 
     st.header("Inbound Dashboard 🪟")
 
@@ -2144,9 +2144,9 @@ div[data-testid="stMetricValue"] {
     k1, k2, k3 = st.columns(3)
     
     k1.metric(
-        "Peak Operational Month",
-        peak_month,
-        f"{int(peak_value)} shipments that month"
+        "2025 Stock CBM",
+        stock_df['CBM'],
+        "CBM month"
     )
 
     k2.metric(
@@ -2155,8 +2155,9 @@ div[data-testid="stMetricValue"] {
     )
 
     k3.metric(
-        "Flow Balance Ratio ⚖️","Total Inbound / Outbound Shipments",
-        f"{flow_balance_ratio:,.2f}"
+        "Peak Operational Month",
+        peak_month,
+        f"{int(peak_value)} shipments that month"
     )
     
     g1, g2 = st.columns(2)
@@ -2695,7 +2696,7 @@ if data_choice == "Inbound ◀️":
         st.warning("No Inbound data available.")
     else:
         filtered = apply_filters(inbound_df)
-        show_inbound_dashboard(filtered)
+        show_inbound_dashboard(filtered,stock_df)
 
 elif data_choice == "Outbound ▶️":
     if outbound_df.empty:
