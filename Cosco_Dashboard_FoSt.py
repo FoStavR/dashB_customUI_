@@ -2719,7 +2719,7 @@ elif data_choice == "Overview 📊":
             overview_outbound_df,
             stock_df
         )
-)
+
 st.sidebar.markdown(
     "<p style='font-size:12px;color:gray'>Use the filters above to refine the dataset. "
     "The dashboard updates automatically based on your selection.</p>",
