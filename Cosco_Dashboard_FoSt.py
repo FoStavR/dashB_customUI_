@@ -2144,9 +2144,9 @@ div[data-testid="stMetricValue"] {
     k1, k2, k3 = st.columns(3)
     
     k1.metric(
-        "2025 Stock CBM",
-        stock_df['CBM'],
-        "CBM month"
+    "2025 Stock CBM",
+    f"{stock_df['CBM'].sum():,.2f}",
+    "CBM in stock"
     )
 
     k2.metric(
