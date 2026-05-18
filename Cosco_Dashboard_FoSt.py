@@ -2031,14 +2031,14 @@ div[data-testid="stMetricValue"] {
     )
     col5, col6, col7,col8 = st.columns(4) 
     col5.metric("2025 Stock CBM", f"{stock_df['CBM'].sum():,.2f}" ) 
-    col6.metric( "Inbound CBM", f"{inbound_cbm:,.2f}" ) 
-    col7.metric( "Outbound CBM", f"{outbound_cbm:,.2f}" )
-    col8.metric("Current Inventory CBM",f"{inventory_cbm:,.2f}")
+    col6.metric("2025 Stock Pallets",f"{stock_pallets:,}")
+    col7.metric("2025 Stock Boxes",f"{stock_boxes:,}")
+    col8.metric("2025 Stock Reels",f"{stock_reels:,}")
     
     k1, k2, k3,k4 = st.columns(4)
-    k1.metric("2025 Stock Pallets",f"{stock_pallets:,}")
-    k2.metric("2025 Stock Boxes",f"{stock_boxes:,}")
-    k3.metric("2025 Stock Reels",f"{stock_reels:,}")
+    k1.metric("Current Inventory CBM",f"{inventory_cbm:,.2f}" )
+    k2.metric( "Inbound CBM", f"{inbound_cbm:,.2f}" ) 
+    k3.metric( "Outbound CBM", f"{outbound_cbm:,.2f}" )
     k4.metric(
         "Avg Monthly Flow","Total CBM / Month",
         f"{avg_monthly_flow:,.1f} CBM"
