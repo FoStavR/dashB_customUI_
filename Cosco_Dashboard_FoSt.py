@@ -137,7 +137,9 @@ def apply_overview_project_filter(inbound_df, outbound_df):
             .isin(selected_projects)
         ]
 
-    return inbound_df, outbound_df
+    return inbound_df, outbound_df,selected_projects 
+
+
 def load_coordinates():
     return pd.read_csv(r"Data/region_coordinates.csv")  # Make sure CSV has lat, lon, city columns if needed
 coords_df = load_coordinates()
@@ -1998,7 +2000,7 @@ div[data-testid="stMetricValue"] {
 # ==============================
 # OVERVIEW DASHBOARD
 # ==============================   
-def show_overview_dashboard(inbound_df, outbound_df,stock_df):
+def show_overview_dashboard(inbound_df, outbound_df,stock_df, selected_projects=None ):
 
     st.header("Overview Analysis Dashboard 📊")
 
@@ -2074,14 +2076,59 @@ div[data-testid="stMetricValue"] {
     # =====================================
     # EXECUTIVE KPI CARDS
     # =====================================
+#################################################
+    ########################################
     stock_cbm = stock_df['CBM'].sum()
+    shared_projects = [
+    "XIAOMI H.K. LIMITED",
+    "CLIMA",
+    "GED",
+    "LC WAIKIKI GR",
+    "LONGI ENEVO0.92MW",
+    "LONGI ENNA",
+    "LONGI INVL",
+    "LONGI MORE ENERGY",
+    "LONGI NOFAR CORBII",
+    "LONGI NOFAR GHIMPATI IEPURESTI",
+    "LONGI TMD",
+    "LONGI-FARIA",
+    "LONGI-RWE",
+    "LONGI-SOLARPRO",
+    "MIDEA",
+    "STORA ENSO",
+    "TCL" 
+    ]
+   
+    include_stock = True
     
-    inventory_cbm = (
-        stock_cbm +
-        inbound_cbm -
-        outbound_cbm
-    )
+    if selected_projects:
     
+        selected_projects_clean = [
+            str(p).strip().upper()
+            for p in selected_projects
+        ]
+    
+        if any(
+            p in shared_projects
+            for p in selected_projects_clean
+        ):
+            include_stock = False
+    
+    if include_stock:
+
+        inventory_cbm = (
+            inbound_df['CBM'].sum()
+            + stock_df['CBM'].sum()
+            - outbound_df['CBM'].sum()
+        )
+    
+    else:
+    
+        inventory_cbm = (
+            inbound_df['CBM'].sum()
+            - outbound_df['CBM'].sum()
+        )
+##################################################################################
     inbound_monthly = build_monthly(
     inbound_df,
         "WH Inbound date",
@@ -2715,7 +2762,7 @@ elif data_choice == "Overview 📊":
         st.warning("No data available for overview.")
     else:
         
-        overview_inbound_df, overview_outbound_df = (
+        overview_inbound_df, overview_outbound_df, selected_projects = (
         apply_overview_project_filter(
             inbound_df,
             outbound_df
@@ -2724,7 +2771,8 @@ elif data_choice == "Overview 📊":
         show_overview_dashboard(
             overview_inbound_df,
             overview_outbound_df,
-            stock_df
+            stock_df,
+            selected_projects
         )
 
 st.sidebar.markdown(
