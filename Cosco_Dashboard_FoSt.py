@@ -2632,7 +2632,7 @@ div[data-testid="stMetricValue"] {
                 use_container_width=True
             )
      
-    
+@st.cache_data
 def build_monthly(df, date_col, label):
 
 
