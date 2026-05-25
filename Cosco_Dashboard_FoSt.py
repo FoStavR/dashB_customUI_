@@ -139,11 +139,11 @@ def apply_overview_project_filter(inbound_df, outbound_df):
 
     return inbound_df, outbound_df,selected_projects 
 
-
+@st.cache_data
 def load_coordinates():
     return pd.read_csv(r"Data/region_coordinates.csv")  # Make sure CSV has lat, lon, city columns if needed
 coords_df = load_coordinates()
-    
+@st.cache_data 
 def load_data(folder_path):
     excel_files = glob.glob(os.path.join(folder_path, "*.xlsx"))
 
@@ -501,6 +501,7 @@ def apply_filters(df):
 # ==============================
 # INBOUND DASHBOARD
 # ==============================
+@st.cache_data
 def show_inbound_dashboard(df,stock_df):
 
     st.header("Inbound Dashboard 🪟")
@@ -1136,6 +1137,7 @@ div[data-testid="stMetricValue"] {
 # ==============================
 # OUTBOUND DASHBOARD
 # ==============================
+@st.cache_data
 def show_outbound_dashboard(df):
 
     st.header("Outbound Dashboard 🪟")
@@ -2000,6 +2002,7 @@ div[data-testid="stMetricValue"] {
 # ==============================
 # OVERVIEW DASHBOARD
 # ==============================   
+@st.cache_data
 def show_overview_dashboard(inbound_df, outbound_df,stock_df, selected_projects=None ):
 
     st.header("Overview Analysis Dashboard 📊")
