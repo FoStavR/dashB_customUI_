@@ -139,12 +139,12 @@ def apply_overview_project_filter(inbound_df, outbound_df):
 
     return inbound_df, outbound_df,selected_projects 
 
-@st.cache_data
+#@st.cache_data
 def load_coordinates():
     return pd.read_csv(r"Data/region_coordinates.csv")  # Make sure CSV has lat, lon, city columns if needed
 coords_df = load_coordinates()
 
-@st.cache_data
+#@st.cache_data
 def load_data(folder_path):
     excel_files = glob.glob(os.path.join(folder_path, "*.xlsx"))
 
@@ -2632,7 +2632,7 @@ div[data-testid="stMetricValue"] {
                 use_container_width=True
             )
      
-@st.cache_data
+#@st.cache_data
 def build_monthly(df, date_col, label):
 
 
