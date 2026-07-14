@@ -2265,13 +2265,13 @@ div[data-testid="stMetricValue"] {
     with g2:
         
         stacked_df = overview_monthly[
-        [
-            "Month",
-            "Inbound_Shipments",
-            "Outbound_Shipments"
-        ]
-    ].copy()
-
+            [
+                "Month",
+                "Inbound_Shipments",
+                "Outbound_Shipments"
+            ]
+        ].copy()
+        
         stacked_df = stacked_df.melt(
             id_vars="Month",
             value_vars=[
@@ -2299,6 +2299,11 @@ div[data-testid="stMetricValue"] {
                 "Outbound": "#ff7f0e"
             }
         )
+        fig.update_xaxes(
+        type="category",
+        categoryorder="array",
+        categoryarray=overview_monthly["Month"].tolist()
+    )
 
         fig.update_layout(
             paper_bgcolor='rgba(255,255,255,1)',
