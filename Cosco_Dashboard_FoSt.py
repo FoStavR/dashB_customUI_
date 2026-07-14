@@ -640,7 +640,7 @@ div[data-testid="stMetricValue"] {
         # ---------------------------------
         # Format numeric columns
         # ---------------------------------
-        for col in display_table.columns:
+         in display_table.columns:
 
             if col != "CBM" and pd.api.types.is_numeric_dtype(display_table[col]):
                 display_table[col] = display_table[col].astype(int)
@@ -2027,10 +2027,10 @@ def show_overview_dashboard(inbound_df, outbound_df,stock_df, selected_projects=
         'Sku Qty.'
     ]
     for df in [inbound_df, outbound_df, stock_df]:
-    for col in numeric_cols:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-    
+        for col in numeric_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+            
     
         # =====================================
         # KPI CALCULATIONS
