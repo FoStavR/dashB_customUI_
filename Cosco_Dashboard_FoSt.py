@@ -2026,7 +2026,10 @@ def show_overview_dashboard(inbound_df, outbound_df,stock_df, selected_projects=
         'REELS',
         'Sku Qty.'
     ]
-
+    for df in [inbound_df, outbound_df, stock_df]:
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
     
     
         # =====================================
