@@ -640,7 +640,7 @@ div[data-testid="stMetricValue"] {
         # ---------------------------------
         # Format numeric columns
         # ---------------------------------
-         in display_table.columns:
+        in display_table.columns:
 
             if col != "CBM" and pd.api.types.is_numeric_dtype(display_table[col]):
                 display_table[col] = display_table[col].astype(int)
