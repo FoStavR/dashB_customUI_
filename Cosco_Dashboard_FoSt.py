@@ -2620,7 +2620,16 @@ div[data-testid="stMetricValue"] {
         st.plotly_chart(fig_cbm, use_container_width=True)
     with col2:
         st.subheader("Monthly CBM Comparison 📐")
-
+        overview_monthly = (
+        overview_monthly
+        .sort_values("Month")
+        .fillna(0)
+        )
+        
+        overview_monthly = overview_monthly[
+            (overview_monthly["Inbound_CBM"] > 0) |
+            (overview_monthly["Outbound_CBM"] > 0)
+        ]
         st.plotly_chart(
                 comparison_chart(
                     overview_monthly,
@@ -2731,11 +2740,7 @@ def comparison_chart(
             title=""
         )
     )    
-    fig.update_xaxes(
-    type="category",
-    categoryorder="array",
-    categoryarray=df["Month"].tolist()
-    )
+    
 
     return fig
 
