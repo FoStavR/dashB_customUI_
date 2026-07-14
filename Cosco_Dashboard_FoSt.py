@@ -2299,11 +2299,7 @@ div[data-testid="stMetricValue"] {
                 "Outbound": "#ff7f0e"
             }
         )
-        fig.update_xaxes(
-        type="category",
-        categoryorder="array",
-        categoryarray=overview_monthly["Month"].tolist()
-    )
+        
 
         fig.update_layout(
             paper_bgcolor='rgba(255,255,255,1)',
