@@ -2730,6 +2730,11 @@ def comparison_chart(
         legend=dict(
             title=""
         )
+    )    
+    fig.update_xaxes(
+    type="category",
+    categoryorder="array",
+    categoryarray=df["Month"].tolist()
     )
 
     return fig
