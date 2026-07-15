@@ -549,7 +549,7 @@ div[data-testid="stMetricValue"] {
 """, unsafe_allow_html=True)
     col1, col2, col3, col4, col5 = st.columns(5)
     col1.metric("Total Shipments",
-    (len(df["Source_File"] != "STOCK"))
+    len(df["Source_File"] != "STOCK")
     col2.metric("DC", df["FDC"].nunique())
     col3.metric("Unique Countries", df["Country"].nunique())
     col4.metric("Vendors", df["Vendor"].nunique())
